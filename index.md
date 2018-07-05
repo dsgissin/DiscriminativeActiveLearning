@@ -1,10 +1,7 @@
 ---
-layout: home
+layout: page
+title: Active Learning Review
 ---
-
-## Active Learning Review
-
-### Why Active Learning?
 
 When we study supervised machine learning, the basic assumption usually is that we have a relatively large training set of labeled examples with which to train our model, and the hard part is to design the model or learning algorithm that will achieve the best results on unseen examples. This is especially true when we talk about deep learning models, where we assume that we have a huge training set that allows us to design deeper and deeper networks without suffering from overfitting.
 
