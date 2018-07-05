@@ -1,18 +1,12 @@
 ---
 layout: page
-title: About
+title: About The Project
 permalink: /about/
 ---
 
-This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at [jekyllrb.com](https://jekyllrb.com/)
-
-You can find the source code for Minima at GitHub:
-[jekyll][jekyll-organization] /
-[minima](https://github.com/jekyll/minima)
-
-You can find the source code for Jekyll at GitHub:
-[jekyll][jekyll-organization] /
-[jekyll](https://github.com/jekyll/jekyll)
+Written by Daniel Gissin under the supervision of [Prof. Shai Shalev-Shwartz][shai] as part of a master's program at the School of Computer Science and Engineering at the [Hebrew University in Jerusalem][huji].
+The code provided is free to use under the terms of the MIT license. If you find issues with the implementations or written report, feel free to contact me.
 
 
-[jekyll-organization]: https://github.com/jekyll
+[shai]: https://www.cs.huji.ac.il/~shais/
+[huji]: http://new.huji.ac.il/en

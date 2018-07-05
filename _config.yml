@@ -1,21 +1,13 @@
-# Welcome to Jekyll!
-#
-# This config file is meant for settings that affect your whole blog, values
-# which you are expected to set up once and rarely edit after that. If you find
-# yourself editing this file very often, consider using Jekyll's data files
-# feature for the data you need to update frequently.
-#
-# For technical reasons, this file is *NOT* reloaded automatically when you use
-# 'bundle exec jekyll serve'. If you change this file, please restart the server process.
-
 # Site settings
 # These are used to personalize your new site. If you look in the HTML files,
 # you will see them accessed via {{ site.title }}, {{ site.email }}, and so on.
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 title: Active Learning Review
+author: Daniel Gissin
+email: daniel.gissin (at) mail.huji.ac.il
 description: >- # this means to ignore newlines until "baseurl:"
-  A summary of a Master's project on active learning, reviewing current active learning methods along with a proposed "Discriminative Active Learning" method. 
+  An introduction to the active learning framework, reviewing current active learning algorithms for deep learning models along with a proposed "Discriminative Active Learning" method. 
 baseurl: "/DiscriminativeActiveLearning"
 url: "https://dsgissin.github.io/" 
 github_username: dsgissin
@@ -26,6 +18,8 @@ theme: minima
 plugins:
   - jekyll-feed
   - jekyll-redirect-from
+  - jekyll-seo-tag
+  - jekyll-sitemap
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list
