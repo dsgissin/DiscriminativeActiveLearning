@@ -2,7 +2,7 @@
 layout: post
 title:  Introduction to Active Learning
 ---
-### The Basic Setup
+## The Basic Setup
 The idea of AL is, instead of just giving the learner a lot of data to learn from, to **allow the learner to ask questions** about the given data. In particular, the learner gets to ask an oracle (some human annotator) about the label of certain instances that are currently unlabeled. If the learner asks smart questions, he might be able to get examples that are very informative and reach a high level of generalization accuracy with a much smaller labeled dataset than he would have if that dataset had been created using random sampling.
 
 The classic motivating example would be the following 2-dimensional data, which we are trying to separate using some linear classifier:
@@ -17,5 +17,22 @@ Let's compare random sampling to an active learning algorithm called "uncertaint
 
 The two initial points give us a slightly tilted decision boundary that doesn't separate the data well. We can see that random sampling chooses points in the dense yellow blob, which don't give us much information and so the decision boundary stays more or less the same, and we aren't able to separate the data well. On the other hand, the active learning algorithm is able to choose points which are very informative and quickly gets to the correct decision boundary.
 
+This is the promise of active learning - **reduce the amount of samples needed to get a strong classifier by choosing the right examples to label**. 
+
+## Possible Scenarios
+
+There are three main scenarios where active learning has been studied. In all scenarios, at each iteration a model is fitted to the current labeled set and that model is used to decide which unlabeled example we should label next.
+
+{% include image.html path="AL-Intro/scenarios.png" %}
+
+The first scenario is **membership query synthesis**, where the active learner is expected to produce an example that it would like us to label. This scenario requires that the model will be able to capture the data distribution well enough to create examples which are reasonable and that would have a clear label - if we are classifying images and the learner produces an image that is pure noise, we won't be able to label it... Due to this limitation, people grew less interested in this scenario, although it has been picked up recently [thanks to GANs][gan paper] and their ability to model the given data distribution well.
+
+The next scenario is **stream based**, where the learner gets a stream of examples from the data distribution and decides if a given instance should be labeled or not.
+
+The third scenario, and the one we will focus on here, is **pool based active learning**. In this scenario the learner has access to a large pool of unlabeled examples and chooses an example to be labeled from that pool. This scenario is most relevant for when gathering data is simple (scraping images/text from the web for instance), but the labeling process is expensive.
+
+## Query Strategies
 
 
+
+[gan paper]: TODO
