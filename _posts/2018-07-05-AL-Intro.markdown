@@ -26,7 +26,7 @@ There are three main scenarios where active learning has been studied. In all sc
 
 {% include image.html path="AL-Intro/scenarios.png" %}
 
-The first scenario is **membership query synthesis**, where the active learner is expected to produce an example that it would like us to label. This scenario requires that the model will be able to capture the data distribution well enough to create examples which are reasonable and that would have a clear label - if we are classifying images and the learner produces an image that is pure noise, we won't be able to label it... Due to this limitation, people grew less interested in this scenario, although it has been picked up recently [thanks to GANs][gan paper] and their ability to model the given data distribution well.
+The first scenario is **membership query synthesis**, where the active learner is expected to produce an example that it would like us to label. This scenario requires that the model will be able to capture the data distribution well enough to create examples which are reasonable and that would have a clear label - if we are classifying images and the learner produces an image that is pure noise, we won't be able to label it... Due to this limitation, people grew less interested in this scenario.
 
 The next scenario is **stream based**, where the learner gets a stream of examples from the data distribution and decides if a given instance should be labeled or not.
 
@@ -45,8 +45,32 @@ $$ \underset{x}{\mathrm{argmin}}\,\underset{y}{\mathrm{max}}(\hat{P}(y|x))) $$
 
 Maximum entropy uses the label distribution's entropy as a measure for the uncertainty of the model on an example. This takes into account the probabilities of all possible labels. The resulting decision rule then becomes: 
 
-$$ (\underset{x}{\mathrm{argmin}}\,-\sum_{y \in Y}\hat{P}(y|x)) $$
+$$ \underset{x}{\mathrm{argmin}}\,-\sum_{y \in Y}\hat{P}(y|x)log(\hat{P}(y|x)) $$
 
+When we are talking about linear classifiers like in the blob example above, choosing according to the uncertainty sampling heuristic is the same as **choosing the sample closest to the decision boundary**. In the blob example we used uncertainty sampling as our query strategy, and we can clearly see that the chosen examples really are those that are closest to the boundary. This margin based approach converges with the uncertainty approach only for linear classifiers though, and we'll address this difference in the next post when we look at active learning for neural networks...
+
+So all this sounds reasonable, but is it any good?
+
+To check, we can compare the uncertainty sampling method to the regular rendom sampling method on a simple binary classification task. We'll try to separate MNIST digits, where one class is the digit "3" and the other is "5". Starting with a single labeled example from each digit, we will use uncertainty sampling to choose the next example to label. The model we will fit in every iteration will be a logistic regression model. These are the results averaged over 10 experiments:
+
+{% include image.html path="AL-Intro/uncertainty_mnist.png" %}
+
+Awesome! With a simple heuristic we were able to get a perfect accuracy after only querying ~50 examples, while the random sampling method still hasn't converged after over 100 examples... So we reduced our labeling costs by over 50%.
+
+### Query By Committee
+The second heuristic that was very prominent in the early days of active learning research is QBC. The idea here is similar to the uncertainty sampling idea, but extended to ensembles - instead of looking at the uncertainty of a single model on the unlabeled set, we'll **train several different models on the labeled set and look at their disagreement on examples in the unlabeled set**. The intuition here is that if our ensemble disagrees on a specific example, then querying that example's label should be more informative because our collective model is uncertain about it.
+
+QBC also has another interpretation though. The model which we are trying to learn comes from a certain hypothesis class (for example, the class of all linear classifiers). When we have a small amount of labeled examples, there could be many possible models that fit the data, but some of them might not generalize well. If we look at our ensemble as a set of models from different viable parts of the hypothesis class (also called the "version space"), then choosing the example with the biggest disagreement corresponds to **making the current version space as small as possible**. This can help us zero in on the right hypothesis using a small amount of labeled examples, like we want.
+
+In the same way we can define different measures for "uncertainty", we can also define different measures of "disagreement". An example of such a measure which corresponds to uncertainty sampling's maximum entropy measure is the "vote entropy". Here, we count the votes for every possible label and normalize so that it's a distribution, and look at the entropy. If \\(M\\) is the size of our ensemble, the decision rule we end up with is:
+
+$$ \underset{x}{\mathrm{argmin}}\,-\sum_{y \in Y}\frac{Votes(y)}{M}log(\frac{Votes(y)}{M}) $$
+
+To check if QBC is any good on the binary MNIST example, we can use 10 SVMs with different regularization coefficients to get different viable models for the labeled set, and then use their disagreement to choose the next example to label. Runnig the experiment gives us the following results:
+
+{% include image.html path="AL-Intro/qbc_mnist.png" %}
+
+Great results again!
 
 
 
