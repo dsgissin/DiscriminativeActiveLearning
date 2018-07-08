@@ -19,6 +19,7 @@ The two initial points give us a slightly tilted decision boundary that doesn't 
 
 This is the promise of active learning - **reduce the amount of samples needed to get a strong classifier by choosing the right examples to label**. 
 
+
 ## Possible Scenarios
 
 There are three main scenarios where active learning has been studied. In all scenarios, at each iteration a model is fitted to the current labeled set and that model is used to decide which unlabeled example we should label next.
@@ -31,8 +32,9 @@ The next scenario is **stream based**, where the learner gets a stream of exampl
 
 The third scenario, and the one we will focus on here, is **pool based active learning**. In this scenario the learner has access to a large pool of unlabeled examples and chooses an example to be labeled from that pool. This scenario is most relevant for when gathering data is simple (scraping images/text from the web for instance), but the labeling process is expensive.
 
-## Query Strategies
 
+## Query Strategies
+Most active learning algorithms start the same way - we fit a model to the labeled set and so we have access to \\(\\hat{P}(y|x)\\).
 
 
 [gan paper]: TODO
