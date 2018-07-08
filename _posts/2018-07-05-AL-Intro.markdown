@@ -34,7 +34,7 @@ The third scenario, and the one we will focus on here, is **pool based active le
 
 
 ## Query Strategies
-Most active learning algorithms start the same way - we fit a model to the labeled set and so we have access to \\(\\hat{P}(y|x)\\).
+Most active learning algorithms start the same way - we fit a model to the labeled set and so we have access to $$ P(y|x) $$.
 
 
 [gan paper]: TODO
