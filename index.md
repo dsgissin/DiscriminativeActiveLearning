@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: home
 title: Active Learning Review
 ---
 
@@ -11,10 +11,15 @@ So while we would like to spend most of our time tweaking our hyper parameters t
 
 ### Blog Structure
 
-In this blog we'll dive into active learning, starting with the basic framework and approaches and moving along to a more modern and practical setting. We will also evaluate and compare these methods in a controlled environment with [our own implementation][github] to see what really works (at least on the classic MNIST and CIFAR datasets). The blog posts are arranged as follows:
+In this blog we'll dive into active learning, starting with the basic framework and approaches and moving along to a more modern and practical setting. We will also evaluate and compare these methods in a controlled environment with [our own implementation][git] to see what really works (at least on the classic MNIST and CIFAR datasets). The blog posts are arranged as follows:
 
 - 
 
+TODO:
+
+- conclusions: as the batch size rises, Core-Set becomes more relevant. Also, the data type is very important and these experiments are only on image data...
+
+- Core-Set is good because it isn't restricted to classification tasks
 
 
 

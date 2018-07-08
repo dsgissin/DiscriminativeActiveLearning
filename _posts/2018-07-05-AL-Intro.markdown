@@ -1,0 +1,7 @@
+---
+layout: post
+title:  Introduction to Active Learning
+date:   2018-07-05 12:37:15 +0300
+categories: jekyll update
+---
+Active Learning has been a field of research for a long time, with many formulations, algorithms and methods developed over the years. We'll go over the ones that proved to be most popular and effective over the years.
