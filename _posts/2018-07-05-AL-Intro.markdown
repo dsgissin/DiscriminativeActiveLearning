@@ -7,4 +7,15 @@ The idea of AL is, instead of just giving the learner a lot of data to learn fro
 
 The classic motivating example would be the following 2-dimensional data, which we are trying to separate using some linear classifier:
 
-{% include image.html path="AL-Intro/blobs.png" caption="Two Blobs" %}
+{% include image.html path="AL-Intro/blobs.png" %}
+
+Clearly we can separate these two blobs linearly using a vertical decision boundary, but this is not so obvious when we only get to see the labels for a small number of these points. Given the wrong subset of these points, we could choose a decision boundary that fails to separate the data correctly...
+
+Let's compare random sampling to an active learning algorithm called "uncertainty sampling" (which we will explain later). Both algorithms get one initial labeled point from each blob (marked in red) and sequentially ask for the label of an additional point (marked in green). In every iteration, we train a SVM classifier on the labeled set:
+
+{% include image.html path="AL-Intro/blobs-AL.png" %}
+
+The two initial points give us a slightly tilted decision boundary that doesn't separate the data well. We can see that random sampling chooses points in the dense yellow blob, which don't give us much information and so the decision boundary stays more or less the same, and we aren't able to separate the data well. On the other hand, the active learning algorithm is able to choose points which are very informative and quickly gets to the correct decision boundary.
+
+
+
