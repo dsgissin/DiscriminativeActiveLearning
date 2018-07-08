@@ -41,11 +41,13 @@ This is probably the simplest and most straightforward idea - make the learner q
 
 Top confidence looks only at the label that the model would have predicted for the example, and asks how much probability was given to said label. It then chooses the example where the top label had the smallest probability. This is the simplest extension of the binary classification setting, and leads to the following decision rule:
 
- \\(\underset{x}{\mathrm{argmin}}\underset{y}{\mathrm{max}}(\hat{P}(y|x))\\)
+\\(\underset{x}{\mathrm{argmin}}\underset{y}{\mathrm{max}}(\hat{P}(y|x)))\\)
 
 Maximum entropy uses the label distribution's entropy as a measure for the uncertainty of the model on an example. This takes into account the probabilities of all possible labels. The resulting decision rule then becomes: 
 
- \\(\underset{x}{\mathrm{argmin}}\sum_{y \in Y}\hat{P}(y|x)\\)
+\\(\underset{x}{\mathrm{argmin}}-\sum_{y \in Y}\hat{P}(y|x))\\)
+
+
 
 
 
