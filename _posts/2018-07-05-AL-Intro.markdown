@@ -72,7 +72,25 @@ To check if QBC is any good on the binary MNIST example, we can use 10 SVMs with
 
 Great results again!
 
+### Other Strategies
+The two methods above are by far the most popular methods for the classical AL setting, but there are many other methods which were developed over the years. Here are some of these methods:
+
+- **Expected Model Change** is an approach which tries to query the examples which we expect to cause the greatest change to our model. For models that we can calculate the gradients to (neural networks for example), a possible approach can be to choose the example with the largest expected gradint length (EGL), where the expectation is over the probabilities that the model gives to the labels. The decision rule for EGL is:
+
+$$ \underset{x}{\mathrm{argmax}}\,\sum_{y \in Y}\hat{P}(y|x)||\frac{\partial l(x,y)}{\partial \theta}|| $$
+
+- **Density Weighted Methods** try to query examples which have both a high uncertainty and which are "representative", meaning they are in dense regions of the data manifolds. This method avoids choosing examples which are outliers, even if they have a high uncertainty, under the assumption that outliers give us less information on the data distribution.
+
+## Summary
+
+In this post we learned about the basics of active learning. We saw that if extend the supervised learning model to allow the learner to ask query specific examples to be labeled, we can significantly reduce the number of samples needed to get the desired accuracy. We also went over the classic query strategies which achieve that improvement.
+
+But the active learning scenario we introduced has some big limitations if we want to really implement it in real life applications. Our scenario assumes that the learner asks for the label of a **single example**, but that means that we need to wait for our neural network to converge for every single query, and that can take a long, long time. Also, it means we can't use many human annotators, which is the strength of services like [Mechanical Turk][turk].
+
+In the next post, we'll dive into the more practical scenario for active learning - Batch Active Learning. We'll understand the new challenges it poses and cover today's state of the art query strategies for deep learning.
 
 
+TODO: link to next post...
 
-[gan paper]: TODO
+
+[turk]: https://www.mturk.com/
