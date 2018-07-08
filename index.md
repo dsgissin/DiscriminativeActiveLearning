@@ -9,7 +9,7 @@ In practice though, this isn't always the case. Not every learning task that we 
 
 So while we would like to spend most of our time tweaking our hyper parameters to get the best results on our data, we end up spending most of it (along with a lot of our money) on labeling the data. This issue has been one of the key drives for research into unsupervised learning, semi-supervised learning and our topic today - Active Learning (AL).
 
-### Blog Structure
+## Blog Structure
 
 In this blog we'll dive into active learning, starting with the basic framework and approaches and moving along to a more modern and practical setting. We will also evaluate and compare these methods in a controlled environment with [our own implementation][git] to see what really works (at least on the classic MNIST and CIFAR datasets). The blog posts are arranged as follows:
 
