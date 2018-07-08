@@ -1,7 +1,10 @@
 ---
 layout: post
 title:  Introduction to Active Learning
-categories: jekyll update
 ---
-### BLAH
-Active Learning has been a field of research for a long time, with many formulations, algorithms and methods developed over the years. We'll go over the ones that proved to be most popular and effective over the years.
+### The Basic Setup
+The idea of AL is, instead of just giving the learner a lot of data to learn from, to **allow the learner to ask questions** about the given data. In particular, the learner gets to ask an oracle (some human annotator) about the label of certain instances that are currently unlabeled. If the learner asks smart questions, he might be able to get examples that are very informative and reach a high level of generalization accuracy with a much smaller labeled dataset than he would have if that dataset had been created using random sampling.
+
+The classic motivating example would be the following 2-dimensional data, which we are trying to separate using some linear classifier:
+
+{% include image.html path="AL-Intro/blobs.png" caption="Two Blobs" %}

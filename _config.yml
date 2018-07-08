@@ -11,6 +11,7 @@ description: >- # this means to ignore newlines until "baseurl:"
 baseurl: "/DiscriminativeActiveLearning"
 url: "https://dsgissin.github.io/" 
 github_username: dsgissin
+linkedin_username: www.linkedin.com/in/daniel-gissin-a9771a103
 
 # Build settings
 markdown: kramdown
