@@ -34,7 +34,12 @@ The third scenario, and the one we will focus on here, is **pool based active le
 
 
 ## Query Strategies
-Most active learning algorithms start the same way - we fit a model to the labeled set and so we have access to \\(P(y|x)\\).
+Most active learning algorithms start the same way - we fit a model to the labeled set and so we have access to \\(\hat{P}(y|x)\\). Where they differ is how they choose the example to query, given the trained model - the **query strategy**. There are many possible heuristics for choosing the best exmample to query, and we'll detail the most common methods.
+
+### Uncertainty Sampling
+This is probably the simplest and most straightforward idea - make the learner query the example which it is least certain about. For binary classification, this boils down to choosing the example on which the model's prediction is closest to a coin toss. When we are working in a multiclass setting, there are different ways of defining uncertainty. The most popular ways are either **top confidence** or **maximum entropy**.
+
+Top confidence looks only at the label that the model would have predicted for the example, and asks how much probability was given to said label. It then chooses the example where the top label had the smallest probability. This is the simplest extension of the binary classification setting, and leads to the following decision rule: \\(\underset{x}{\mathrm{argmin}}\underset{y}{\mathrm{max}}(\hat{P}(y|x))\\)
 
 
 [gan paper]: TODO
