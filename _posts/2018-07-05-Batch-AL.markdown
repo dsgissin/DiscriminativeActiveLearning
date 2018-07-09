@@ -1,0 +1,46 @@
+---
+layout: post
+title: Batch Active Learning
+---
+## Making Active Learning Practical
+In our [last post][previous post], we learned about the active learning framework. In our framework, there is a lrage pool of easily gathered unlabeled data, and our learner helps reduce the labeling costs by asking for labels one at a time from the unlabeled pool. We saw a few possible query strategies that the learner can use, and that they can reduce the labeling costs significantly.
+
+This is all very nice, but who has time to sit and label examples one at a time, when we have to wait for the learner to train a neural network before every single label request? Furthermore, we usually want to have a large batch of examples to label, so we can send them to many different annotators who can label them in parallel... So to make the ideas from the last post applicable to modern machine learning tasks, we need to slightly tweak our framework.
+
+In each iteration, the learner will train a model on the labeled examples like before, only now he will **query a batch of examples**. The size of this batch is a free parameter of our framework, and depends on the way we do the labeling. Overall this seems like a rather meaningless change to our framework, but it adds some complexity.
+
+### The Effects of the Batch Size
+There are a few effects that the batch size has on our learning process. On the plus side, we get to label examples in parallel and suffer less of a delay to our process which stems from waiting for our neural networks to train. But this plus side has a cost.
+
+On the down side, the learner has to select examples with less information. If a learner has to query a batch of size 100, then the 100th example he has to choose is chosen without seeing the labels to the first 99 examples. If we had those labels, the learner might have chosen a different 100th example which would have been better for our overall accuracy in the long run.
+
+But there is an even worse down side to the batch setting. The learner can ask for a batch of 100 examples such that each of them is very informative, **but the information they give us is too similar**. Intuitively, if the learner has trouble confidently classifying the digit "0", it should be enough to get a few relevant examples of difficult "0"s for it to improve. But if the learner asks for 100 examples of "0"s, it isn't using it's batch budget very well...
+
+This sort of problem can lead to a greedy strategy which chooses the top-K examples according to a standard measure **being worse than random sampling**. So intuitively, a good query strategy for the batch setting should not only chooses informative examples in the batch, but also choose examples that have small mutual information.
+
+## Query Strategies For the Batch Setting
+There were many papers published in recent years about active learning for neural networks, and we probably missed a few of them. Still, we'll try to detail the most notable modern methods, and for those we also provide implementations and code to recreate our experiments.
+
+### Greedy Query Strategies
+These strategies are adaptations for neural networks of classic query strategies which only query one label at a time. They do not take into account the mutual information between examples in a single batch, but rather simply **choose the top-K examples under the relevant score**.
+
+#### Uncertainty-Based Methods
+We saw in the previous post that uncertainty sampling performs really well in the classical setting, and in general it is the most widely used query strategy due to it's effectiveness and simplicity. It isn't surprising then that this query strategy has been adapted to neural networks.
+
+The most straightforward adaptation of uncertainty sampling is to simply treat the softmax scores of the neural network as a probability distribution over the labels (\\(\hat{P}(y|x)\\)), and use the regular decision rules. This approach is reasonable, but it is questionable how much the softmax scores can be interpreted as probabilities... They look like probabilities, but the training process of the neural network just tries to get the softmax scores of the training examples to be as close to one-hot as possible, and because the model is very powerful it tends to fit the data very well and so gets over confident about examples in general.
+
+To deal with this issue, many people are working on ways of making neural networks output results which more accurately represent their confidence on a given input. The most well known work, and one which has been adapted to the active learning setting, is [Yarin Gal's work on Bayesian Neural Networks][Yarin Gal Paper]. In this work, the authors show that we can get an approximation of the posterior probability over the labels by running the input many times through the network **with dropout turned on** and then average the resulting softmax scores. This method can be easilly implemented for most modern neural network architectures, since they already use dropout for regularization. The resulting probability distribution over the labels after \\(T\\) iterations is then simply:
+
+$$ P(y|x) \\approx \frac{1}{T}\sum_{t=1}^{T}\hat{P}(y|x,drop_t) $$
+
+This new confidence estimation can now be plugged into any of the possible uncertainty decision rules in order to choose the top-K examples.
+
+
+
+
+
+TODO: link to next post...
+
+
+[previous post]: 
+[Yarin Gal Paper]: https://arxiv.org/pdf/1703.02910.pdf

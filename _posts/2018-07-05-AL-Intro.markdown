@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Introduction to Active Learning
+title: Introduction to Active Learning
 ---
 ## The Basic Setup
 The idea of AL is, instead of just giving the learner a lot of data to learn from, to **allow the learner to ask questions** about the given data. In particular, the learner gets to ask an oracle (some human annotator) about the label of certain instances that are currently unlabeled. If the learner asks smart questions, he might be able to get examples that are very informative and reach a high level of generalization accuracy with a much smaller labeled dataset than he would have if that dataset had been created using random sampling.
@@ -87,7 +87,7 @@ In this post we learned about the basics of active learning. We saw that if exte
 
 But the active learning scenario we introduced has some big limitations if we want to really implement it in real life applications. Our scenario assumes that the learner asks for the label of a **single example**, but that means that we need to wait for our neural network to converge for every single query, and that can take a long, long time. Also, it means we can't use many human annotators, which is the strength of services like [Mechanical Turk][turk].
 
-In the next post, we'll dive into the more practical scenario for active learning - Batch Active Learning. We'll understand the new challenges it poses and cover today's state of the art query strategies for deep learning.
+In the next post, we'll dive into the more practical scenario for active learning - **Batch Active Learning**. We'll understand the new challenges it poses and cover today's state of the art query strategies for deep learning.
 
 
 TODO: link to next post...

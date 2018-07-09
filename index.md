@@ -21,6 +21,8 @@ TODO:
 
 - Core-Set is good because it isn't restricted to classification tasks
 
+- note in the index file about the experiments and how we tried to make them fair (but that the literature isn't very fair) with a link to the detailing of the experiments and the choices we've made.
+
 
 
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning
