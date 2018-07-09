@@ -31,7 +31,7 @@ The most straightforward adaptation of uncertainty sampling is to simply treat t
 
 To deal with this issue, many people are working on ways of making neural networks output results which more accurately represent their confidence on a given input. The most well known work, and one which has been adapted to the active learning setting, is [Yarin Gal's work on Bayesian Neural Networks][Yarin Gal Paper]. In this work, the authors show that we can get an approximation of the posterior probability over the labels by running the input many times through the network **with dropout turned on** and then average the resulting softmax scores. This method can be easilly implemented for most modern neural network architectures, since they already use dropout for regularization. The resulting probability distribution over the labels after \\(T\\) iterations is then simply:
 
-$$ P(y|x) \\approx \frac{1}{T}\sum_{t=1}^{T}\hat{P}(y|x,drop_t) $$
+$$ P(y|x) \approx \frac{1}{T}\sum_{t=1}^{T}\hat{P}(y|x,drop_t) $$
 
 This new confidence estimation can now be plugged into any of the possible uncertainty decision rules in order to choose the top-K examples.
 
