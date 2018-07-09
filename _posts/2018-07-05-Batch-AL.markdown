@@ -24,7 +24,7 @@ There were many papers published in recent years about active learning for neura
 ### Greedy Query Strategies
 These strategies are adaptations for neural networks of classic query strategies which only query one label at a time. They do not take into account the mutual information between examples in a single batch, but rather simply **choose the top-K examples under the relevant score**.
 
-#### Uncertainty-Based Methods
+#### Uncertainty-Based Strategy
 We saw in the previous post that uncertainty sampling performs really well in the classical setting, and in general it is the most widely used query strategy due to it's effectiveness and simplicity. It isn't surprising then that this query strategy has been adapted to neural networks.
 
 The most straightforward adaptation of uncertainty sampling is to simply treat the softmax scores of the neural network as a probability distribution over the labels \\(\hat{P}(y|x)\\), and use the regular decision rules. This approach is reasonable, but it is questionable how much the softmax scores can be interpreted as probabilities... They look like probabilities, but the training process of the neural network just tries to get the softmax scores of the training examples to be as close to one-hot as possible, and because the model is very powerful it tends to fit the data very well and so gets over confident about examples in general.
@@ -33,10 +33,20 @@ To deal with this issue, many people are working on ways of making neural networ
 
 $$ P(y|x) \approx \frac{1}{T}\sum_{t=1}^{T}\hat{P}(y|x,drop_t) $$
 
-This new confidence estimation can now be plugged into any of the possible uncertainty decision rules in order to choose the top-K examples.
+This new confidence estimation can now be plugged into any of the possible uncertainty decision rules in order to choose the top-K examples. In their paper the authors compare many possible decision rules, and the best two decision rules were the two presented in the previous post for uncertainty sampling.
 
+#### Margin-Based Strategy
+In the previous post we saw that for linear models there is an equivalence between choosing examples which have a high uncertainty and choosing examples which are closest to the decision boundary. This is due to the fact that the probability of an example is decided by it's distance (or inner product) from the weight vector which is orthogonal to the decision boundary.
 
+In neural networks though, this is hardly the case. The uncertainty score in neural networks is calculated with respect to the final representation layer. This means that choosing according to the uncertainty score is equivalent to choosing examples whose **representation** is closest to the decision boundary. The thing is, because the network is deep and complex, small changes to the input image can cause wild changes to the representation of the image. This is best seen in [adversarial examples][adversarial example paper].
 
+Adversarial examples are a fascinating and quirky property of neural networks which stems from a very simple fact - in the same way we can calculate the derivative of the loss with respect to the weights of the network, we can calculate the derivative **with respect to the input**. So changing the weights in the opposite direction of the gradient, we can change the input image in the direction of the gradient and get a new image which slightly increases the loss. Doing this a few times can result in an image which is completely misclassified while looking basically the same as the original image. This property of neural networks and it's implications has led to a thriving field of neural network security research.
+
+So coming back to active learning, we would like to be able to find the images which are closest to the decision boundary of our network, but the distance of the representation of the inputs to the softmax decision boundary is a bad proxy for that. The actual distance to the decision boundary, like many things in the world of deep learning, is intractable. So what can we do?
+
+The cool solution [Frédéric Precioso's group came up with][adversarial AL paper], is to use adversarial examples to get a better proxy for the distance to the decision boundary. What they do is take each image in the unlabeled set, get it's classification according to the network and then find an adversarial example for it, such that the network makes the wrong classification on that image. They then calculate the distance between the original image and the adversarial example, and choose the top-K examples with the smallest distance to their adversarial example. Basically, they cross the decision boundary and check how far they had to go to cross it.
+
+This doesn't assure that the adversarial example is the closest possible to the decision boundary, but it does give a reasonable heuristic upper bound on the distance to the decision boundary, which their method attempts to minimize.
 
 
 TODO: link to next post...
@@ -44,3 +54,5 @@ TODO: link to next post...
 
 [previous post]: 
 [Yarin Gal Paper]: https://arxiv.org/pdf/1703.02910.pdf
+[adversarial example paper]: https://arxiv.org/pdf/1312.6199.pdf
+[adversarial AL paper]: https://arxiv.org/pdf/1802.09841.pdf
