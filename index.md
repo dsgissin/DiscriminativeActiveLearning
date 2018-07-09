@@ -27,6 +27,11 @@ TODO:
 
 - Also note in the experiments section which algorithms use sub sampling for computational purposes (core set for instance)
 
+- spell check all of the posts in a real text editor
+
+- add in the references the papers of the methods that weren't mentioned (like the bandit formulation)
+
+- add a comment on the amount of methods and approaches that exist today, using many different tools in ML and optimization, and hyperlink non obvious things.
 
 
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning

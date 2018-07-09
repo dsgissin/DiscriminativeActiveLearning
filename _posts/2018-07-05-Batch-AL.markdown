@@ -2,8 +2,8 @@
 layout: post
 title: Batch Active Learning
 ---
-## Making Active Learning Practical
-In our [last post][previous post], we learned about the active learning framework. In our framework, there is a lrage pool of easily gathered unlabeled data, and our learner helps reduce the labeling costs by asking for labels one at a time from the unlabeled pool. We saw a few possible query strategies that the learner can use, and that they can reduce the labeling costs significantly.
+## Making Active Learning Practical - Batch Queries
+In our [last post][previous post], we learned about the active learning framework. In our framework, there is a large pool of easily gathered unlabeled data, and our learner helps reduce the labeling costs by asking for labels one at a time from the unlabeled pool. We saw a few possible query strategies that the learner can use, and that they can reduce the labeling costs significantly.
 
 This is all very nice, but who has time to sit and label examples one at a time, when we have to wait for the learner to train a neural network before every single label request? Furthermore, we usually want to have a large batch of examples to label, so we can send them to many different annotators who can label them in parallel... So to make the ideas from the last post applicable to modern machine learning tasks, we need to slightly tweak our framework.
 
@@ -47,7 +47,9 @@ The cool solution [Frédéric Precioso's group came up with][adversarial AL pape
 
 This doesn't mean that the adversarial example is the closest possible to the decision boundary, but it does give a reasonable heuristic upper bound on the distance to the decision boundary, which their method attempts to minimize.
 
-### Batch-Aware Query Strategy - Core Set
+### Batch-Aware Query Strategies 
+
+#### The Core Set Approach
 
 This strategy takes the opposite approach to the previous ones. Instead of ignoring the batch mode and focusing on greedily choosing the examples that maximize some score, this method ignores the approach of maximizing some score, and instead tries to find a batch that is as diverse as possible, and represents the complete data distribution. But how can we find a batch which represents the complete unlabeled set as much as possible?
 
@@ -63,20 +65,30 @@ There are no guarantees that we will be able to improve on the greedy solution i
 
 There is only one thing we need to sort out - the distances between images in pixel space has little to do with the semantic distance between them, so just using the euclidean distance between the images isn't the best idea. What this method does is **use the image representation learned by the neural network that was trained on the labeled set as the space in which to calculate the distances between images**. So we simply need to train the network on the labeled set, get the network's embedding of the entire dataset and then run the core set method on that embedding.
 
-#### Flexibility of the Core Set Approach
+##### Flexibility of the Core Set Approach
 This approach has a unique advantage which isn't mentioned but is very relevant for practical purposes. So far we have talked about active learning only in the setting of classification problems, but that doesn't mean that we wouldn't want to use it on other problems (regression problems, structured learning, segmentation and so on). All of the methods we've talked about besides core set assume we have access to a learned \\(\hat{P}(y|x)\\), but when our problem isn't a classification problem, this isn't true. While we could try to adapt the other methods to new scenarios, the core set approach simply assumes access to a learned representation of the input data, which is something that exists for a larger variety of scenarios (most ones involving neural networks). So this method automatically extends to many types of machine learning problems, which is a real plus. 
 
 We can also think about extending this method to working on any type of data and problem **by having the learned representation be an embedding learned by an autoencoder**. In this extension, we can just train an autoencoder on the entire dataset (both the labeled and unlabeled set), and then iteratively choose batches which cover the embedding. We won't even have to retrain the autoencoder between batches, since our objective is getting a good cover and not maximizing some individual example score.
 
+#### Coordinate Matching
+This strategy isn't practical for neural networks as we will soon see, but it is worth a mention because of it's unique approach. What [Glencora Borradaile's group suggest][coordinate matching paper] is that the classic methods for the single query setting are close enough to optimal, such that we can **replace the objective of maximizing some example score with the objective of choosing a K-sized batch which is as close as possible to what we would have gotten after K iterations in the classic setting**. If we successfully select a batch which is close to what the standard iterative methods would have given us, then we will get results which are like the ones from the classic setting which were great.
 
+So how can we try to choose a batch which is close to the next K choices of a classic active learning algorithm? This is where it gets impractical... 
+
+This method uses Monte Carlo sampling to simulate many sequences of K choices of the classic algorithm, and then tries to combine the different sequences into one single batch of size K. We'll assume for example that the method we are trying to mimic is uncertainty sampling. What we'll do is sample a single example using uncertainty sampling and then **label the example with a label drawn from our learned distribution over labels**, \\(y~\hat{P}(y|x)\\). We will now pretend this is the correct label and fit a new model to the labeled examples and repeat this process until we have a sequence of K examples. We then start over and run the above process for T times, until we have T possible sequences of K examples.
+
+If we believe our model's posterior over the labels give an example, we should expect to see sequences which are similar to the behavior of the model. Having many of these sequences should reduce the variance caused by the sampling process, and what's left for us to do is extract the K examples from the sequences which best capture that behavior. In the paper there are two approaches suggested for dealing with this objective, one variational and the other based on a greedy optimization algorithm. We won't detail them here since the method isn't something we can implement with neural networks in any reasonable running time...
+
+## Summary
 
 
 TODO: link to next post...
 
-[next post]
+TODO: link to "next post"
 [previous post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/AL-Intro.html
 [Yarin Gal Paper]: https://arxiv.org/pdf/1703.02910.pdf
 [adversarial example paper]: https://arxiv.org/pdf/1312.6199.pdf
 [adversarial AL paper]: https://arxiv.org/pdf/1802.09841.pdf
 [Ran Core Set]: https://arxiv.org/pdf/1711.00941.pdf
 [Silvio Core Set]: https://arxiv.org/pdf/1708.00489.pdf
+[coordinate matching paper]: https://icml.cc/2012/papers/607.pdf
