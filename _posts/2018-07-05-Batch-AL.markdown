@@ -52,7 +52,7 @@ This doesn't assure that the adversarial example is the closest possible to the 
 TODO: link to next post...
 
 
-[previous post]: 
+[previous post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/AL-Intro.html
 [Yarin Gal Paper]: https://arxiv.org/pdf/1703.02910.pdf
 [adversarial example paper]: https://arxiv.org/pdf/1312.6199.pdf
 [adversarial AL paper]: https://arxiv.org/pdf/1802.09841.pdf
