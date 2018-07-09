@@ -19,7 +19,7 @@ But there is an even worse down side to the batch setting. The learner can ask f
 This sort of problem can lead to a greedy strategy which chooses the top-K examples according to a standard measure **being worse than random sampling**. So intuitively, a good query strategy for the batch setting should not only chooses informative examples in the batch, but also choose examples that have small mutual information.
 
 ## Query Strategies For the Batch Setting
-There were many papers published in recent years about active learning for neural networks, and we probably missed a few of them. Still, we'll try to detail the most notable modern methods, and for those we also provide implementations and code to recreate our experiments.
+There were many papers published in recent years about active learning for neural networks, and we probably missed a few of them. Still, we'll try to detail the most notable modern methods, and for those we also provide implementations and code to recreate our experiments. In this post we'll focus on giving concise explanations and intuitions to these methods, and the [next post][next post] will be all about comparing the methods to see which is best.
 
 ### Greedy Query Strategies
 These strategies are adaptations for neural networks of classic query strategies which only query one label at a time. They do not take into account the mutual information between examples in a single batch, but rather simply **choose the top-K examples under the relevant score**.
@@ -77,6 +77,7 @@ TODO: link to next post...
 
 
 [previous post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/AL-Intro.html
+[next post]: 
 [Yarin Gal Paper]: https://arxiv.org/pdf/1703.02910.pdf
 [adversarial example paper]: https://arxiv.org/pdf/1312.6199.pdf
 [adversarial AL paper]: https://arxiv.org/pdf/1802.09841.pdf
