@@ -7,7 +7,7 @@ title: Active Learning Review
 author: Daniel Gissin
 email: daniel.gissin (at) mail.huji.ac.il
 description: >- # this means to ignore newlines until "baseurl:"
-  An introduction to the active learning framework, reviewing current active learning algorithms for deep learning models along with a proposed "Discriminative Active Learning" method. 
+  An introduction to the active learning framework, from classical algorithms to state of the art methods for deep active learning. The methods are also compared empirically with the source code of the experiments freely available, and a new method called "Discriminative Active Learning" is covered.
 baseurl: "/DiscriminativeActiveLearning"
 url: "https://dsgissin.github.io/" 
 github_username: dsgissin

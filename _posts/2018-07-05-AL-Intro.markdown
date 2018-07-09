@@ -90,8 +90,5 @@ But the active learning scenario we introduced has some big limitations if we wa
 In the [next post][next post], we'll dive into the more practical scenario for active learning - **Batch Active Learning**. We'll understand the new challenges it poses and cover today's state of the art query strategies for deep learning.
 
 
-TODO: link to next post...
-
-
 [turk]: https://www.mturk.com/
 [next post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Batch-AL.html
