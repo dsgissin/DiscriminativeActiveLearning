@@ -23,6 +23,10 @@ TODO:
 
 - note in the index file about the experiments and how we tried to make them fair (but that the literature isn't very fair) with a link to the detailing of the experiments and the choices we've made.
 
+- note about the core set algorithm - as the batch size is smaller, the MIP solution is more important.
+
+- Also note in the experiments section which algorithms use sub sampling for computational purposes (core set for instance)
+
 
 
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning
