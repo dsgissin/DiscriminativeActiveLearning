@@ -37,5 +37,7 @@ TODO:
 
 - model type matters (EGL looks different in speech). The dataset also matters (are we overfitting to cifar and mnist like everyone?)
 
+- in the DAL section, show that it isn't correlated to Adversarial for example, and use that to motivate combining the two methods (and show whether or not it works)
+
 
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning

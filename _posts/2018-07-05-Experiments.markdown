@@ -42,7 +42,6 @@ The method we found that works best was to train a neural network only once, but
 
 This does not completely control the randomness of the neural network training, but we found it reduces it quite a bit and we are able to deal with the randomness by running several experiments and averaging over them...
 
-
 ## Comparison on MNIST
 We start with a comparison on the [MNIST dataset][MNIST]. The architecture we use here for all of the methods is a simple convolutional architecture (the LeNet architecture). For a detailing of the hyper parameters you're welcome to look at [our code][git]. The batch size we used here was a **batch size of 100**, and an initial labeled set of size 100 as well.
 
@@ -116,7 +115,7 @@ It isn't very difficult to record this label entropy in our experiments, and so 
 
 TODO: insert picture of CIFAR here
 
-This is very interesting - except for the random sampling which has the highest label entropy (unsurprisingly), we see a one to one correlation between the accuracy ranking of the methods and their label entropy! This is quite pleasing and shows that this measure can be used as a proxy for the success of an active learning method practice. If the method you're using has a label distribution that is far from the label distribution you expect for your data, you should suspect that the method isn't working very well...
+This is very interesting - except for the random sampling which has the highest label entropy (unsurprisingly), we see a **one to one correlation between the accuracy ranking of the methods and their label entropy!** This is quite pleasing and shows that this measure can be used as a proxy for the success of an active learning method practice. If the method you're using has a label distribution that is far from the label distribution you expect for your data, you should suspect that the method isn't working very well...
 
 Another interesting thing to note here is the label entropy of EGL which is much, much lower than all of the others, and barely improves during the process. This confirms our suspicions - EGL continuously queries examples from the same few classes, and does not lead to a balanced labeled dataset. This explains the poor performance it had during our experiments...
 
@@ -124,7 +123,7 @@ But the EGL paper showed great results, so what happened?
 
 Remember that the team at Baidu implemented EGL as an active learning method for speech recognition using RNNs, and our experiments were all on image classification tasks using CNNs. The two architectures are very different and so it is quite plausible that the architectures have gradients that behave differently. There is also a difference in the loss function used, where Baidu's team tries to maximize the log likelihood of the data while we try to minimize the cross entropy classification loss. With all of these differences, it isn't surprising that the gradients will behave differently between the experiments, and because EGL is based on the gradient length, it isn't surprising that we will see this difference in performace.
 
-Checking that our suspicions are correct regarding the difference in gradient behavior is an interesting comparison to make, but is outside the scope of this project...
+Checking that our suspicions are correct regarding the difference in gradient behavior is interesting, but is outside the scope of this project...
 
 ## Ranking Comparison
 Another interesting way we can compare methods is used in the EGL paper, and we will use it here too. We can look at the way each method ranks examples in the unlabeled set from high score to low score (applicable only to the greedy methods), and try to look at the rankings. Similar methods should rank the unlabeled set in a similar way, so that if we plot the rankings one against the other we should expect them to more or less line up on the diagonal of the plot. On the other hand, methods which are very different should have plots that are all over the place.
@@ -147,7 +146,13 @@ Finally, we'll have a look at EGL compared to uncertainty sampling. We expect th
 
 
 ## Summary
-TODO: point to next post which details our method and also point to the conclusion post if they would rather head straight there...
+In this post we empirically compared the different methods that we detailed in the last post, using the MNIST and CIFAR datasets. We saw the effect of the batch size on the different methods, and reviewed two additional interesting ways to compare active learning methods - the label entropy and the ranking comparison.
+
+We also saw that the methods can be sensitive to the actual objective we are optimizing, and the network architecture. This is especially true for methods like EGL, which use the model's gradient as part of their decision rule (and it might also be true of the adversarial approach for this same reason).
+
+Overall, while the different methods perform differently in different situations, it doesn't seem like any of them really outshines the good old uncertainty sampling. This comes in contrast to what is shown in the different papers, and we do not have a good explanation for this.
+
+In the [next post][next post], we will review the work we did on developing a new active learning method - "Discriminative Active Learning". The method didn't pan out and we weren't able to get it to work as well as we'd hoped, but the thought process could be of interest. If you would rather skip ahead, [the post after that][last post] concludes this review of active learning.
 
 
 [previous post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Batch-AL.html
@@ -155,3 +160,5 @@ TODO: point to next post which details our method and also point to the conclusi
 [first post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/AL-Intro.html
 [MNIST]: http://yann.lecun.com/exdb/mnist/
 [CIFAR]: https://www.cs.toronto.edu/~kriz/cifar.html
+[next post]: 
+[last post]: 
