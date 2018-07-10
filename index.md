@@ -35,7 +35,7 @@ TODO:
 
 - large batch sizes are more practical for industry
 
-- model type matters (EGL looks different in speech)
+- model type matters (EGL looks different in speech). The dataset also matters (are we overfitting to cifar and mnist like everyone?)
 
 
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning

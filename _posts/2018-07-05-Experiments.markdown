@@ -44,7 +44,7 @@ This does not completely control the randomness of the neural network training, 
 
 
 ## Comparison on MNIST
-We start with a comparison on the MNIST dataset. The architecture we use here for all of the methods is a simple convolutional architecture (the LeNet architecture). For a detailing of the hyper parameters you're welcome to look at [our code][git]. The batch size we used here was a **batch size of 100**, and an initial labeled set of size 100 as well.
+We start with a comparison on the [MNIST dataset][MNIST]. The architecture we use here for all of the methods is a simple convolutional architecture (the LeNet architecture). For a detailing of the hyper parameters you're welcome to look at [our code][git]. The batch size we used here was a **batch size of 100**, and an initial labeled set of size 100 as well.
 
 The methods we compared are random sampling, regular uncertainty sampling (using the softmax scores), Bayesian uncertainty sampling, Adversarial active learning, EGL (as detailed shortly in the [first post][first post]), core set with the greedy algorithm and core set with the MIP extension.
 
@@ -69,7 +69,7 @@ After those disclaimers we can move on to comparing the two formulations:
 
 {% include image.html path="Experiments/results_mnist_CoreSet.png" %}
 
-Well, we can see that the MIP formulation has a very positive effect from very early on in the active learning process, which is very nice to see. This improvement is consistant with what was reported in the core set paper, and they were able to use the entire dataset and not a subsample like us. We should note that while we haven't explored this idea enough to make any definitive claims, we feel that this improvement is brought on mainly due to the robustness to outliers of the MIP formulation.
+Well, we can see that the MIP formulation has a very positive effect from very early on in the active learning process, which is very nice to see. This improvement is consistant with what was reported in the core set paper, even though we weren't able to use the entire unlabeled set like they did. We should note that while we haven't explored this idea enough to make any definitive claims, we feel that this improvement is brought on mainly due to the robustness to outliers of the MIP formulation.
 
 So we can conclude that if you are OK with waiting a bit before getting the next batch of examples to be labeled, and if you have the resources to solve a MIP optimization problem with many variables, it is worth it to use the MIP formulation. Still, it's nice to see that the method beats random sampling even in it's greedy formulation, although the difference isn't very large. This is mostly due to the relatively small batch size, which means the method's batch-aware nature is less present.
 
@@ -78,21 +78,32 @@ We implemented EGL and compared it to random sampling:
 
 {% include image.html path="Experiments/results_mnist_EGL.png" %}
 
-Oh. This looks rather bad. This was also the case in the adversarial paper when they tried to compare their method to EGL, but the EGL paper shows great improvements against both random sampling and other methods, so what happened?
+Oh. This looks bad. 
+
+This was also the case in the adversarial paper when they tried to compare their method to EGL, but the EGL paper shows great improvements against both random sampling and other methods, so what happened?
 
 We'll explain what we think happened later in the post.
 
 ### Full Comparison
 TODO: what's different than reported in the papers?
 
+But all of this is just a comparison on MNIST, the most worn out dataset in history. We'd like to compare the methods on more realistic datasets and with a larger batch size, which simulates real-life active learning problems better. For that we turn to a image classification dataset that is only a bit less worn out - [CIFAR][CIFAR]!
+
 ## CIFAR-10 Comparison
-which model was used? batch size? initial set size? why no MIP comparison?
+CIFAR-10 is a image classification dataset with 10 classes. As opposed to the MNIST dataset, the images here are RGB and a bit larger (32x32). This task is harder and so we need a better, deeper architecture to solve it. We chose to follow the lead of the core set paper and use the **VGG-16 architecture**, a deep convolutional neural network which is rather popular in general as a pre-trained feature extractor. We used a much larger batch size this time - a **batch size of 5000**, along with an initial sample of 5000 examples.
+
+We chose this batch size both because it was the setting in the core set paper, and because it gives us a view of a batch size that is orders of magnitude larger that the one usually used when comparing these methods. We also believe that this batch size is much more realistic for industry applications, where the datsets are usually very big and the labeling is paralleled.
+
+However because the batch size is so big here, our computational constraints made it impossible to use the MIP formulation of the core set approach (5000 examples was the largest amount we were able to work with on the MNIST experiments). While we hoped to compare the methods in a fair way, we take comfort in the fact that this is the exact setting used in the core set paper and the results we got in other experiments are similar to those in the paper, so we refer to the author's results. They report that the MIP formulation improves the greedy results during the experiments by ~2% throughout the active learning process.
+
+
 
 ## CIFAR-100 Comparison
 which model was used?
 
 ## Batch Composition & Label Entropy
 TODO: EGL was designed for speech recognition which uses a MLE loss function and an RNN, which is a very different formulation than what we had here... There are also many more labels (they margenalize over the top 100)
+TODO: check entropies for both cifar and MNIST
 
 ## Summary
 
@@ -100,3 +111,5 @@ TODO: EGL was designed for speech recognition which uses a MLE loss function and
 [previous post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Batch-AL.html
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning
 [first post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/AL-Intro.html
+[MNIST]: http://yann.lecun.com/exdb/mnist/
+[CIFAR]: https://www.cs.toronto.edu/~kriz/cifar.html
