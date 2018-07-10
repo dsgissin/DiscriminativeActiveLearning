@@ -33,5 +33,9 @@ TODO:
 
 - add a comment on the amount of methods and approaches that exist today, using many different tools in ML and optimization, and hyperlink non obvious things.
 
+- large batch sizes are more practical for industry
+
+- model type matters (EGL looks different in speech)
+
 
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning

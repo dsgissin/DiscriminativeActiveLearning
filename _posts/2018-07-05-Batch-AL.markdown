@@ -47,6 +47,11 @@ The cool solution [Frédéric Precioso's group came up with][adversarial AL pape
 
 This doesn't mean that the adversarial example is the closest possible to the decision boundary, but it does give a reasonable heuristic upper bound on the distance to the decision boundary, which their method attempts to minimize.
 
+#### Model Change Strategy - EGL
+EGL was mentioned in passing in the previous post so just to remind us - the decision rule for EGL is to choose the examples that have the largest expected gradient length, where the expectation is over the probability distribution that the model predicts for the labels for each example. Intuitively, examples that we expect to change our model a lot have a lot of information in them.
+
+A [team from Baidu][EGL paper] adapted this method for speech recognition, using it to choose from an unlabeled set of utterances and using a deep recurrent architecture as the architecture.
+
 ### Batch-Aware Query Strategies 
 
 #### The Core Set Approach
@@ -93,6 +98,7 @@ TODO: link to "next post"
 [Yarin Gal Paper]: https://arxiv.org/pdf/1703.02910.pdf
 [adversarial example paper]: https://arxiv.org/pdf/1312.6199.pdf
 [adversarial AL paper]: https://arxiv.org/pdf/1802.09841.pdf
+[EGL paper]: https://arxiv.org/pdf/1612.03226.pdf
 [Ran Core Set]: https://arxiv.org/pdf/1711.00941.pdf
 [Silvio Core Set]: https://arxiv.org/pdf/1708.00489.pdf
 [coordinate matching paper]: https://icml.cc/2012/papers/607.pdf
