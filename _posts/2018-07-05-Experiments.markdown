@@ -106,13 +106,15 @@ In this section we'll try to learn more about the behavior of the algorithms by 
 
 To summarize the distribution of labels in the examples that were queried with a single scalar, we'll define the notion of "label entropy". The label entropy of a set of \\(M\\) examples will be the entropy of the empirical distribution of labels in the set. Mathematically, this can be written as:
 
-$$ LabelEntropy(S) = - \sum_{y \in Y}\frac{#(y)}{M}log(\frac{#(y)}{M}) $$
+$$ LabelEntropy(S) = - \sum_{y \in Y}\frac{Count(y)}{M}log(\frac{Count(y)}{M}) $$
 
 Like in regular entropy, a high label entropy corresponds to higher uncertainty on the labels in the set. Since we want active learning methods to create a labeled set that is relatively diverse and represents the full distribution well, we should expect a good active learning method to create a labeled dataset which has a similar label distribution as the full dataset. Since our full dataset has the same amount of images for every label (maximal entropy), we would say that as a rule of thumb, higher label entropy during the active learning process is better.
 
 It isn't very difficult to record this label entropy in our experiments, and so we recorded the entropy of the different algorithms. In every iteration of the experiment we calculated the label entropy of all of the examples queried so far, and in the following plot we can see the results averaged over several experiments (the dotted black line is the maximal entropy over the number of classes):
 
-TODO: insert picture of MNIST and CIFAR here
+{% include image.html path="Experiments/results_mnist_entropy_cumulative.png" %}
+
+TODO: insert picture of CIFAR here
 
 This is very interesting - except for the random sampling which has the highest label entropy (unsurprisingly), we see a one to one correlation between the accuracy ranking of the methods and their label entropy! This is quite pleasing and shows that this measure can be used as a proxy for the success of an active learning method practice. If the method you're using has a label distribution that is far from the label distribution you expect for your data, you should suspect that the method isn't working very well...
 
