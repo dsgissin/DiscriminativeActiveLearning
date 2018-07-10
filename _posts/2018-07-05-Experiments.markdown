@@ -85,7 +85,7 @@ This was also the case in the adversarial paper when they tried to compare their
 We'll explain what we think happened later in the post.
 
 ### Full Comparison
-TODO: what's different than reported in the papers?
+TODO: what's different than reported in the papers? why is uncertainty so good?
 
 But all of this is just a comparison on MNIST, the most worn out dataset in history. We'd like to compare the methods on more realistic datasets and with a larger batch size, which simulates real-life active learning problems better. For that we turn to a image classification dataset that is only a bit less worn out - [CIFAR][CIFAR]!
 
@@ -127,8 +127,27 @@ Remember that the team at Baidu implemented EGL as an active learning method for
 Checking that our suspicions are correct regarding the difference in gradient behavior is an interesting comparison to make, but is outside the scope of this project...
 
 ## Ranking Comparison
+Another interesting way we can compare methods is used in the EGL paper, and we will use it here too. We can look at the way each method ranks examples in the unlabeled set from high score to low score (applicable only to the greedy methods), and try to look at the rankings. Similar methods should rank the unlabeled set in a similar way, so that if we plot the rankings one against the other we should expect them to more or less line up on the diagonal of the plot. On the other hand, methods which are very different should have plots that are all over the place.
+
+We'll start by comparing two methods which we should expect to be similar - uncertainty sampling and Bayesian uncertainty sampling. Note that we've ordered the ranking such that those who are ranked first (bottom and left) are those that will be selected first (ranked most informative under the query strategy):
+
+{% include image.html path="Experiments/results_mnist_ranking_uncertainty_bayesian.png" %}
+
+Indeed, we got that the two methods rank the unlabeled examples in a very similar way. Next we can have a look at the adversarial method. It's intuition is similar to that of uncertainty sampling and as we saw in earlier posts, they are the same thing in linear models. Do they behave similarly when applied to highly non linear functions like neural nets?
+
+{% include image.html path="Experiments/results_mnist_ranking_uncertainty_adversarial.png" %}
+
+It seems so! 
+
+While the two methods are very different in what they do, the eventual results are very similar. A comparison of the adversarial approach to Bayesian uncertainty sampling looks basically the same.
+
+Finally, we'll have a look at EGL compared to uncertainty sampling. We expect there to be little correlation since we saw EGL selects examples predominately from the same class...
+
+{% include image.html path="Experiments/results_mnist_ranking_uncertainty_egl.png" %}
+
 
 ## Summary
+TODO: point to next post which details our method and also point to the conclusion post if they would rather head straight there...
 
 
 [previous post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Batch-AL.html
