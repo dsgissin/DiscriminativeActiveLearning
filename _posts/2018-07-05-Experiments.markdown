@@ -102,8 +102,29 @@ However because the batch size is so big here, our computational constraints mad
 which model was used?
 
 ## Batch Composition & Label Entropy
-TODO: EGL was designed for speech recognition which uses a MLE loss function and an RNN, which is a very different formulation than what we had here... There are also many more labels (they margenalize over the top 100)
-TODO: check entropies for both cifar and MNIST
+In this section we'll try to learn more about the behavior of the algorithms by looking at how a queried batch is distributed across the different classes. We did this both as a sanity measure and to try and understand why EGL's results were so bad, under the hypothesis that it is because there is very high correlation between the examples that are queried by EGL.
+
+To summarize the distribution of labels in the examples that were queried with a single scalar, we'll define the notion of "label entropy". The label entropy of a set of \\(M\\) examples will be the entropy of the empirical distribution of labels in the set. Mathematically, this can be written as:
+
+$$ LabelEntropy(S) = - \sum_{y \in Y}\frac{#(y)}{M}log(\frac{#(y)}{M}) $$
+
+Like in regular entropy, a high label entropy corresponds to higher uncertainty on the labels in the set. Since we want active learning methods to create a labeled set that is relatively diverse and represents the full distribution well, we should expect a good active learning method to create a labeled dataset which has a similar label distribution as the full dataset. Since our full dataset has the same amount of images for every label (maximal entropy), we would say that as a rule of thumb, higher label entropy during the active learning process is better.
+
+It isn't very difficult to record this label entropy in our experiments, and so we recorded the entropy of the different algorithms. In every iteration of the experiment we calculated the label entropy of all of the examples queried so far, and in the following plot we can see the results averaged over several experiments (the dotted black line is the maximal entropy over the number of classes):
+
+TODO: insert picture of MNIST and CIFAR here
+
+This is very interesting - except for the random sampling which has the highest label entropy (unsurprisingly), we see a one to one correlation between the accuracy ranking of the methods and their label entropy! This is quite pleasing and shows that this measure can be used as a proxy for the success of an active learning method practice. If the method you're using has a label distribution that is far from the label distribution you expect for your data, you should suspect that the method isn't working very well...
+
+Another interesting thing to note here is the label entropy of EGL which is much, much lower than all of the others, and barely improves during the process. This confirms our suspicions - EGL continuously queries examples from the same few classes, and does not lead to a balanced labeled dataset. This explains the poor performance it had during our experiments...
+
+But the EGL paper showed great results, so what happened?
+
+Remember that the team at Baidu implemented EGL as an active learning method for speech recognition using RNNs, and our experiments were all on image classification tasks using CNNs. The two architectures are very different and so it is quite plausible that the architectures have gradients that behave differently. There is also a difference in the loss function used, where Baidu's team tries to maximize the log likelihood of the data while we try to minimize the cross entropy classification loss. With all of these differences, it isn't surprising that the gradients will behave differently between the experiments, and because EGL is based on the gradient length, it isn't surprising that we will see this difference in performace.
+
+Checking that our suspicions are correct regarding the difference in gradient behavior is an interesting comparison to make, but is outside the scope of this project...
+
+## Ranking Comparison
 
 ## Summary
 
