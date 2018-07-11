@@ -55,15 +55,36 @@ In the second case, which was specifically hand crafted to fool uncertainty samp
 
 These two examples give us some clues as to what happened in the high dimensional MNIST example. It's reasonable to believe that the big boost we got at the first few iterations was due to the "mode covering" behavior of our method, since it starts quickly focusing on the examples which are completely different than the ones currently labeled. We can also guess the reason for the decrease in improvement in the later parts of the experiment - since our method goes for the examples farthest from the decision boundary, it is possible that it **queries a lot of outliers** that don't give enough information on the original classification problem. Once the method successfully covers the modes of the distribution, it stops improving because it keeps choosing examples that aren't at the heart of the classification problem, while uncertainty sampling does the opposite and zeros in exactly on the decision boundary and gets the examples which are most informative.
 
-So now that we have a feel for the method's advantages and disadvantages, we can try and come up with ideas for tweaking our model a little.
+So now that we have a feel for the method's advantages and disadvantages, we can try and come up with ideas for tweaking our method a little.
 
 ### Handling Outliers
-TODO: write about the ideas for handling the outliers...
+Our main take away from the toy examples was that our method is susceptible to outliers and possibly focuses too much on examples which are too far away from the decision boundary. We tried coming up with ideas to handle this shortcoming by maybe using a different decision rule instead of cruedly choosing the examples most confidently classified as "unlabeled".
+
+The first idea was to use a stochastic decision rule. Instead of making a hard choice, we can sample from the entire unlabeled set with probability weights proportional to a function of the confidence. This is precisely the solution used in the [kmeans++][kmeans++] initialization scheme for the K-means clustering algorithm, and put an emphasis on high confidence examples while lowering the chance of choosing outliers.
+
+Another idea was to formulate the batch decision rule in the same way that the core set approach does, but only over the examples we were confident about (either over a threshold or over a certain amount of examples). We'll use the representation learned by our binary classifier to make that choice. This would ensure we don't pick too many outliers and also help make sure we choose examples which are different from the labeled set in different ways.
+
+Sadly, after playing around with these ideas for a while we couldn't get a significant improvement and so we stopped working on this direction...
 
 ## Experiments with Neural Nets in the Batch Setting
+Armed with what we learned from the toy problems, we can move on to the more realistic challenges of testing our method in the batch setting, on bigger datasets and with neural networks. In this setting we have a few new parameters to deal with - we need to choose the representation to work with (the raw data or the learned representation) and we need to choose how many sub-batches to query.
 
+We'll arbitrarily choose a sub-batch amount of 10 and compare the two possible representations on the MNIST dataset:
+
+TODO: insert mnist plot...
+
+TODO: insert correlation plot between the two representations...
+
+TODO: discuss the plots and which representation is better...
+
+TODO: insert a plot against all of the other methods
+
+TODO: look at the cifar results
+
+TODO: combining methods...
 
 [first post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/AL-Intro.html
 [second post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Batch-AL.html
-[thirs post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Experiments.html
+[third post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Experiments.html
 [rethinking generalization]: https://arxiv.org/abs/1611.03530
+[kmeans++]: https://en.wikipedia.org/wiki/K-means%2B%2B

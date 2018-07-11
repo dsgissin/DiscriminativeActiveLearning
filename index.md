@@ -9,35 +9,42 @@ In practice though, this isn't always the case. Not every learning task that we 
 
 So while we would like to spend most of our time tweaking our hyper parameters to get the best results on our data, we end up spending most of it (along with a lot of our money) on labeling the data. This issue has been one of the key drives for research into unsupervised learning, semi-supervised learning and our topic today - Active Learning (AL).
 
-## Blog Structure
+### Blog Structure
 
-In this blog we'll dive into active learning, starting with the basic framework and approaches and moving along to a more modern and practical setting. We will also evaluate and compare these methods in a controlled environment with [our own implementation][git] to see what really works (at least on the classic MNIST and CIFAR datasets). The blog posts are arranged as follows:
+In this blog we'll dive into active learning, starting with the basic framework and approaches and moving along to a more modern and practical setting. We will also evaluate and compare these methods in a controlled environment to see what really works (at least on the classic MNIST and CIFAR datasets). Finally, we will suggest a new method for active learning and detail the thought process that led us during the research in trying to get this new method to work well. 
 
-- 
+All of the code for recreating the experiments in this blog, along with our implementations of the different methods are available in our [github repository][git] and you are free to use it and learn from it.
+
+The blog posts are arranged as follows:
+
+- [Introduction to Active Learning][intro post] - in this post we introduce the active learning framework and the classic algorithms developed for it.
+
+- [Batch Active Learning][batch post] - in this post we extend the framework to a more realistic setting, and detail today's state of the art methods in this framework using depe learning models.
+
+- [Comparing The Methods][compare post] - in this post we compare the state of the art methods against each other in the most impartial way we can, using the MNIST and CIFAR-10 datasets.
+
+- [Discriminative Active Learning][dal post] - in this post we introduce the new active learning method we developed, tracing our research process from the initial idea through the experiments we've made. We also compare the method to existing methods.
+
+- [Conclusion][conclusion post] - in this post we wrap everything up and try to focus on the most important take home messages from all of the things we saw in this blog series.
+
+- [References][ref post] - if all of this isn't enough, in this post we give references to all of the methods and ideas covered in this post and more so you can keep learning about this interesting field.
+
+We really hope you enjoy reading through this review of active learning, and gain a lot out of it.
 
 TODO:
-
-- conclusions: as the batch size rises, Core-Set becomes more relevant. Also, the data type is very important and these experiments are only on image data...
-
-- Core-Set is good because it isn't restricted to classification tasks
-
-- note in the index file about the experiments and how we tried to make them fair (but that the literature isn't very fair) with a link to the detailing of the experiments and the choices we've made.
-
-- note about the core set algorithm - as the batch size is smaller, the MIP solution is more important.
-
-- Also note in the experiments section which algorithms use sub sampling for computational purposes (core set for instance)
 
 - spell check all of the posts in a real text editor
 
 - add in the references the papers of the methods that weren't mentioned (like the bandit formulation)
 
-- add a comment on the amount of methods and approaches that exist today, using many different tools in ML and optimization, and hyperlink non obvious things.
+- hyperlink non obvious things.
 
-- large batch sizes are more practical for industry
-
-- model type matters (EGL looks different in speech). The dataset also matters (are we overfitting to cifar and mnist like everyone?)
-
-- in the DAL section, show that it isn't correlated to Adversarial for example, and use that to motivate combining the two methods (and show whether or not it works)
 
 
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning
+[intro post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/AL-Intro.html
+[batch post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Batch-AL.html
+[compare post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Experiments.html
+[dal post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/DAL.html
+[conclusion post]: 
+[ref post]: 
