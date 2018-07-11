@@ -25,7 +25,7 @@ The first is the raw data, which means we are completely agnostic to the labels 
 
 The second representation, like in the core set approach, is the representation learned by a model that is trained on the labeled data. This means our representation will contain more semantic features, but will mean we are bound to the labeling process if we want to use a representation that improves throughout the active learning process.
 
-## Why Discriminative Active Learning May Be Promising
+## Why This May Be Promising
 This idea takes a very different approach to other active learning methods, in that **it is completely agnostic about the original problem we are trying to solve**, and only focuses on making the labeled set as diverse as possible. In this sense it is similar to the core set approach. This gives it the nice property that there is no need to adapt it to different machine learning scenarios like regression, segmentation and so on.
 
 Another bonus here, is that **binary classification is relatively easy**. It isn't hard to overfit on two classes (even under random labels) with a modestly sized neural network, and it can be done rather quickly. The MIP formulation of the core set approach for instance is relatively slow.
@@ -35,13 +35,11 @@ Lastly, you may say that a conceptual drawback of our method is the fact that it
 ## Starting Out Small
 So now that we're motivated about our new algorithm, we can implement it on a toy problem and see how it compares to uncertainty sampling. We'll use the MNIST dataset as our toy problem, trying to classify the digits "3" and "5" like we did in the [introduction][first post] (with the representation being the raw data and a logistic regression model):
 
-XXXXXXXXXXX
+{% include image.html path="DAL/mnist_discriminative.png" %}
 
-Not the results we were hoping for.
+We can see that our method starts out really well, even beating uncertainty sampling a bit(!), but as the experiment progresses we see that it improves more and more slowly until it reaches accuracies that are the same as random sampling... This appears promising, but we have to figure out what happens after the first few iterations that screws our method up.
 
-We can see that our method starts out well and beats random sampling, but as the experiment progresses we see that it improves more and more slowly until it reaches accuracies that are the same as random sampling... We're also nowhere close to uncertainty sampling, but let's put that aside for now.
-
-So our method isn't behaving like we expected. This means we're not understanding something basic about it... We choose to make things as simple as possible in order to understand what's going on, and so we look at how our method behaves on synthetic 2-dimensional data. Like we did before, we'll make two blobs that are linearly seperable and look at what examples our method chooses:
+Having this kind of unexpected behavior means we're not understanding something basic about our method... So let's make things as simple as possible in order to understand what's going on - let's look at how our method behaves on synthetic 2-dimensional data. Like we did before, we'll make two blobs that are linearly seperable and look at what examples our method chooses:
 
 {% include image.html path="DAL/initial_choices.png" %}
 
@@ -49,16 +47,20 @@ We color discriminative plots differently - red dots are in the labeled set and 
 
 {% include image.html path="DAL/initial_choices_2.png" %}
 
+This sort of data is very different from real data. We can't really picture high dimensional data manifolds and our lower dimensional intuitions often fail in high dimensions. still, we can learn a thing or two from looking at toy problems. We can see that in the two cases our method is very different from uncertainty sampling: 
 
+In the first case, uncertainty sampling focuses heavilly on examples which are close to the decision boundary between the two blobs, while our method does the opposite and focuses on examples in the extremes. In hindsight this isn't very surprising, since our method chooses examples which are most confidently classified as "unlabeled", so when we're working with linear classifiers like in this example **our method chooses the examples which are farthest from the decision boundary**. That being said, we should remember that these decision boundaries are different (they are for different classification problems).
 
-This sort of data is very different from real data. We can't really picture high dimensional data manifolds and our lower dimensional intuitions often fail in high dimensions. still, we can learn a thing or two from looking at toy problems.
+In the second case, which was specifically hand crafted to fool uncertainty sampling, uncertainty sampling focuses only on examples from the two close clusters while completely ignoring the other clusters which are informative and would lead to a better classification accuracy. Our method on the other hand does the exact opposite and quickly queries an example from each of the clusters. This hints at another behavior our method has which is similar to the core set approach - **the discriminative method starts by covering the different modes of the distribution**. While this looks great and seems like a problem for uncertainty sampling, we should say that this kind of data rarely exists in high dimensions, and we don't get real data that uncertainty sampling fails on this badly.
 
+These two examples give us some clues as to what happened in the high dimensional MNIST example. It's reasonable to believe that the big boost we got at the first few iterations was due to the "mode covering" behavior of our method, since it starts quickly focusing on the examples which are completely different than the ones currently labeled. We can also guess the reason for the decrease in improvement in the later parts of the experiment - since our method goes for the examples farthest from the decision boundary, it is possible that it **queries a lot of outliers** that don't give enough information on the original classification problem. Once the method successfully covers the modes of the distribution, it stops improving because it keeps choosing examples that aren't at the heart of the classification problem, while uncertainty sampling does the opposite and zeros in exactly on the decision boundary and gets the examples which are most informative.
 
+So now that we have a feel for the method's advantages and disadvantages, we can try and come up with ideas for tweaking our model a little.
 
-- move to synthetic datasets
-- outlier issue and mode covering
+### Handling Outliers
+TODO: write about the ideas for handling the outliers...
 
-## Experiments with Neural Networks
+## Experiments with Neural Nets in the Batch Setting
 
 
 [first post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/AL-Intro.html
