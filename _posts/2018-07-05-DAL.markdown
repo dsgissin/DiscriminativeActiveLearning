@@ -1,0 +1,67 @@
+---
+layout: post
+title: Discriminative Active Learning
+---
+If you made it this far, you've been [introduced][first post] to the active learning framework, saw how to [extend][second post] the framework to more realistic settings and have seen ways of [comparing active learning methods][third post]. We'll now detail the thought process and experiments we ran when trying to come up with a new method - discriminative active learning.
+
+## Intuition
+We started with a simple idea - when we are creating a dataset to be labeled that we want to represent the original distribution well, we shouldn't have too many redundant instances. **If we want to learn from new examples, we want them to be different from what we already have**.
+
+So if we were able to look at the unlabeled dataset and find the examples which are the most different from those in our labeled dataset, then picking them will hopefully give us informative samples to learn from.
+
+## The Method
+If you buy into this intuition, it isn't hard to think of a method that does just what we want:
+
+Given a labeled set and an unlabeled set that we want to sample a batch from, instead of training a model to solve the original task on the labeled set, **we train a model to classify between the labeled set and the unlabeled set**. We then use that model to **choose the examples which are most confidently classified as being from the unlabeled set**.
+
+Note that the label distribution here is very different from a regular binary classification task - two identical instances of the original distribution can be labeled differently simply depending on whether or not they've been labeled. This classification task resembles [classifying a random labeling][rethinking generalization] more than it does anything else...
+
+Assuming that our model can't classify random labels perfectly with 0 loss, we should expect it to more confidently classify unlabeled examples which are far on the data manifold from labeled examples. This behavior should resemble the core set behavior, without being batch aware. Note that if the classifier is expressive enough to completely overfit the data and get a loss of 0, we can just stop training it before that happens.
+
+### The Representation
+There are two possible representations we can use to train our binary classifier on: 
+
+The first is the raw data, which means we are completely agnostic to the labels and the task and are able to run our algorithm asynchronously from the labeling process (which is very nice). That said, this representation makes it hard for the binary classifier to pick up on semantic differences in the data, because it trains on a random labeling of the data. This representation has the advantage of decoupling the active learning process from the labeling process, but will possibly give us poor results.
+
+The second representation, like in the core set approach, is the representation learned by a model that is trained on the labeled data. This means our representation will contain more semantic features, but will mean we are bound to the labeling process if we want to use a representation that improves throughout the active learning process.
+
+## Why Discriminative Active Learning May Be Promising
+This idea takes a very different approach to other active learning methods, in that **it is completely agnostic about the original problem we are trying to solve**, and only focuses on making the labeled set as diverse as possible. In this sense it is similar to the core set approach. This gives it the nice property that there is no need to adapt it to different machine learning scenarios like regression, segmentation and so on.
+
+Another bonus here, is that **binary classification is relatively easy**. It isn't hard to overfit on two classes (even under random labels) with a modestly sized neural network, and it can be done rather quickly. The MIP formulation of the core set approach for instance is relatively slow.
+
+Lastly, you may say that a conceptual drawback of our method is the fact that it isn't batch-aware like the core set approach. The thing is, since we do not care about the actual labels of the data and only care about whether they are labeled or not, we can transfer chosen examples to the labeled set automatically without needing to wait for an annotator. This means **we can trade off speed for batch awareness**, by sampling sub batches instead of the full batch. For example if our batch size is 100, we can iteratively train the binary classifier, select 10 examples to be "labeled" and then retrain the binary classifier and keep going until we have our final batch of 100 examples.
+
+## Starting Out Small
+So now that we're motivated about our new algorithm, we can implement it on a toy problem and see how it compares to uncertainty sampling. We'll use the MNIST dataset as our toy problem, trying to classify the digits "3" and "5" like we did in the [introduction][first post] (with the representation being the raw data and a logistic regression model):
+
+XXXXXXXXXXX
+
+Not the results we were hoping for.
+
+We can see that our method starts out well and beats random sampling, but as the experiment progresses we see that it improves more and more slowly until it reaches accuracies that are the same as random sampling... We're also nowhere close to uncertainty sampling, but let's put that aside for now.
+
+So our method isn't behaving like we expected. This means we're not understanding something basic about it... We choose to make things as simple as possible in order to understand what's going on, and so we look at how our method behaves on synthetic 2-dimensional data. Like we did before, we'll make two blobs that are linearly seperable and look at what examples our method chooses:
+
+{% include image.html path="DAL/initial_choices.png" %}
+
+We color discriminative plots differently - red dots are in the labeled set and black dots are unlabeled. The decision boundary is also different, with the yellow part being areas classified as "unlabeled". Before we analyze these results, let's take a look at another synthetic blobby dataset and analyze them together:
+
+{% include image.html path="DAL/initial_choices_2.png" %}
+
+
+
+This sort of data is very different from real data. We can't really picture high dimensional data manifolds and our lower dimensional intuitions often fail in high dimensions. still, we can learn a thing or two from looking at toy problems.
+
+
+
+- move to synthetic datasets
+- outlier issue and mode covering
+
+## Experiments with Neural Networks
+
+
+[first post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/AL-Intro.html
+[second post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Batch-AL.html
+[thirs post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Experiments.html
+[rethinking generalization]: https://arxiv.org/abs/1611.03530
