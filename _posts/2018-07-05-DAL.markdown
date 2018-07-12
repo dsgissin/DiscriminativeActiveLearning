@@ -81,7 +81,13 @@ TODO: insert a plot against all of the other methods
 
 TODO: look at the cifar results
 
+### Implementation Details
+The binary classification task we are trying to solve is very unbalanced since most of the time we'll have an order of magnitude more unlabeled examples than labeled examples. This means we need to be careful in the way we train our neural network to make sure we don't get a classifier that just thinks everything is "unlabeled".
+
+We found that there were two things that were crucial in this case. First, we need to make sure that the class weights are balanced, so that labeled examples will effect the loss function more than unlabeled ones. Second, we need to make sure the batch size is large enough so that we have labeled batches in every batch on average. Otherwise, the training process will have many gradients which lead the network to thinking all examples are unlabeled, and that's a local minima that could be hard to get out of. This means that if there are 10 times more unlabeled examples than labeled examples, you should aim for a batch size that isn't much smaller than 64 to be on the safe side.
+
 TODO: combining methods...
+
 
 [first post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/AL-Intro.html
 [second post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Batch-AL.html
