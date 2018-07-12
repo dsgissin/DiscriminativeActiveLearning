@@ -73,9 +73,12 @@ We'll arbitrarily choose a sub-batch amount of 10 and compare the two possible r
 
 TODO: insert mnist plot...
 
-TODO: insert correlation plot between the two representations...
+{% include image.html path="DAL/ranking_comparison.png" %}
 
-TODO: discuss the plots and which representation is better...
+We can see from the first plot that it is clearly better to use the learned representation, which contains semantic information, as opposed to the raw pixel representation (even if that representation was good enough for the initial experiments).
+
+The ranking correlation plot between the two representations is also rather interesting. The two methods aren't entirely uncorrelated but they are also not correlated in a regular way as we've seen for the uncertainty sampling alternatives. We're not too sure how to explain the straight lines in the top-right quadrant of the plot, but the important region for active learning is the bottom and left regions, which contain the examples that the methods rank as most informative. We can see that there are many examples that one representation ranks as very informative while the other one does not at all (as seen in the bottom-right and top-left quadrants). This explains why we see such a difference in performance between the two representations.
+
 
 TODO: insert a plot against all of the other methods
 
@@ -84,7 +87,11 @@ TODO: look at the cifar results
 ### Implementation Details
 The binary classification task we are trying to solve is very unbalanced since most of the time we'll have an order of magnitude more unlabeled examples than labeled examples. This means we need to be careful in the way we train our neural network to make sure we don't get a classifier that just thinks everything is "unlabeled".
 
-We found that there were two things that were crucial in this case. First, we need to make sure that the class weights are balanced, so that labeled examples will effect the loss function more than unlabeled ones. Second, we need to make sure the batch size is large enough so that we have labeled batches in every batch on average. Otherwise, the training process will have many gradients which lead the network to thinking all examples are unlabeled, and that's a local minima that could be hard to get out of. This means that if there are 10 times more unlabeled examples than labeled examples, you should aim for a batch size that isn't much smaller than 64 to be on the safe side.
+We found that there were two things that were crucial in this case. First, we need to make sure that the **class weights are balanced**, so that labeled examples will effect the loss function more than unlabeled ones. Second, we need to make sure the **batch size is large** enough so that we have labeled batches in every batch on average. Otherwise, the training process will have many gradients which lead the network to thinking all examples are unlabeled, and that's a local minima that could be hard to get out of. This means that if there are 10 times more unlabeled examples than labeled examples, you should aim for a batch size that isn't much smaller than 64 to be on the safe side.
+
+As for the architecture used for the binary classification, we chose to use a MLP architecture (a deep fully connected neural network) for simplicity and speed, and you may take a look at [the code][git] for the exact details which weren't too important. We should note however that since we are basically trying to classify random labels, we're asking the network to overfit a difficult classification task and so **we shouldn't use any form of regularization** (no weight decay, dropout and so on).
+
+
 
 TODO: combining methods...
 
@@ -94,3 +101,4 @@ TODO: combining methods...
 [third post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Experiments.html
 [rethinking generalization]: https://arxiv.org/abs/1611.03530
 [kmeans++]: https://en.wikipedia.org/wiki/K-means%2B%2B
+[git]: https://github.com/dsgissin/DiscriminativeActiveLearning
