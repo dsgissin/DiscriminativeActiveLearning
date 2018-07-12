@@ -35,8 +35,6 @@ TODO:
 
 - spell check all of the posts in a real text editor
 
-- add in the references the papers of the methods that weren't mentioned (like the bandit formulation)
-
 - hyperlink non obvious things.
 
 
@@ -46,5 +44,5 @@ TODO:
 [batch post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Batch-AL.html
 [compare post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Experiments.html
 [dal post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/DAL.html
-[conclusion post]: 
-[ref post]: 
+[conclusion post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Conclusion.html
+[ref post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/References.html
