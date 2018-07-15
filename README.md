@@ -1,6 +1,6 @@
 # Discriminative Active Learning
 
-This repository contains the code used to run the deep active learning experiments detailed in our [blog][https://dsgissin.github.io/DiscriminativeActiveLearning/].
+This repository contains the code used to run the deep active learning experiments detailed in our [blog](https://dsgissin.github.io/DiscriminativeActiveLearning/).
 
 You may use the code in this repository, but note that this isn't a complete active learning library and is not fully generic. Replicating the experiments and using the implementations should be easy, but adapting the code to new datasets and experiment types may take a bit of effort.
 
@@ -20,9 +20,7 @@ In order to run our code, you'll need these main packages:
 
 The code is run using the main.py file in the following way:
 
-'''
-python3 main.py <experiment_index> <dataset> <batch_size> <initial_size> <iterations> <method> <experiment_folder> -idx "/cs/labs/shais/dsgissin/ActiveLearning/experiment_indices/"
-'''
+	python3 main.py <experiment_index> <dataset> <batch_size> <initial_size> <iterations> <method> <experiment_folder> -idx "/cs/labs/shais/dsgissin/ActiveLearning/experiment_indices/"
 
 - experiment_index: an integer detailing the number of experiment (since usually many are run in parallel and combined later).
 - dataset: a string detailing the dataset for this experiment (one of "mnist", "cifar10" or "cifar100").
@@ -68,8 +66,6 @@ this file contains the query strategy implementations for all of the methods det
 
 ## Examples
 
-'''
-python3 main.py 0 "mnist" 100 100 20 "Random" "/path/to/experiment/folder" -idx "/path/to/folder/with/initial/index/file"
-python3 main.py 7 "cifar10" 5000 5000 5 "DiscriminativeLearned" "/path/to/experiment/folder" -idx "/path/to/folder/with/initial/index/file"
-python3 main.py 0 "cifar100" 5000 5000 3 "Adversarial" "/path/to/experiment/folder" -method2 "Bayesian"
-'''
+	python3 main.py 0 "mnist" 100 100 20 "Random" "/path/to/experiment/folder" -idx "/path/to/folder/with/initial/index/file"
+	python3 main.py 7 "cifar10" 5000 5000 5 "DiscriminativeLearned" "/path/to/experiment/folder" -idx "/path/to/folder/with/initial/index/file"
+	python3 main.py 0 "cifar100" 5000 5000 3 "Adversarial" "/path/to/experiment/folder" -method2 "Bayesian"
