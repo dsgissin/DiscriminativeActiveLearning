@@ -19,7 +19,7 @@ Note that the label distribution here is very different from a regular binary cl
 Assuming that our model can't classify random labels perfectly with 0 loss, we should expect it to more confidently classify unlabeled examples which are far on the data manifold from labeled examples. This behavior should resemble the core set behavior, without being batch aware. Note that if the classifier is expressive enough to completely overfit the data and get a loss of 0, we can just stop training it before that happens.
 
 ### The Representation
-There are two possible representations we can use to train our binary classifier on: 
+There are three possible representations we can use to train our binary classifier on: 
 
 The first is the **raw data**, which means we are completely agnostic to the labels and the task and are able to run our algorithm asynchronously from the labeling process (which is very nice). That said, this representation makes it hard for the binary classifier to pick up on semantic differences in the data, because it trains on a random labeling of the data. This representation has the advantage of decoupling the active learning process from the labeling process, but will possibly give us poor results.
 

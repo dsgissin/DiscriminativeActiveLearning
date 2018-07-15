@@ -11,7 +11,7 @@ title: References
 ### Methods We've Covered
 - [Bayesian Unceratainty Sampling][bayesian]
 
-- The Core Set Approach - [Silvio Savarese's paper[Silvio Core Set] and [Ran El-Yaniv's paper][Ran Core Set].
+- The Core Set Approach - [Silvio Savarese's paper][Silvio Core Set] and [Ran El-Yaniv's paper][Ran Core Set].
 
 - [The Adversarial Approach][adversarial]
 

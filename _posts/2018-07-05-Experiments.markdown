@@ -171,5 +171,5 @@ In the [next post][next post], we will review the work we did on developing a ne
 [first post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/AL-Intro.html
 [MNIST]: http://yann.lecun.com/exdb/mnist/
 [CIFAR]: https://www.cs.toronto.edu/~kriz/cifar.html
-[next post]: 
-[last post]: 
+[next post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/DAL.html
+[last post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Conclusion.html
