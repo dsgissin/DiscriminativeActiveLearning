@@ -21,9 +21,11 @@ Assuming that our model can't classify random labels perfectly with 0 loss, we s
 ### The Representation
 There are two possible representations we can use to train our binary classifier on: 
 
-The first is the raw data, which means we are completely agnostic to the labels and the task and are able to run our algorithm asynchronously from the labeling process (which is very nice). That said, this representation makes it hard for the binary classifier to pick up on semantic differences in the data, because it trains on a random labeling of the data. This representation has the advantage of decoupling the active learning process from the labeling process, but will possibly give us poor results.
+The first is the **raw data**, which means we are completely agnostic to the labels and the task and are able to run our algorithm asynchronously from the labeling process (which is very nice). That said, this representation makes it hard for the binary classifier to pick up on semantic differences in the data, because it trains on a random labeling of the data. This representation has the advantage of decoupling the active learning process from the labeling process, but will possibly give us poor results.
 
-The second representation, like in the core set approach, is the representation learned by a model that is trained on the labeled data. This means our representation will contain more semantic features, but will mean we are bound to the labeling process if we want to use a representation that improves throughout the active learning process.
+A second representation that decouples the active learning process from the labeling process is an **autoencoder embedding of the data in a lower dimension**. This representation has a higher chance of capturing some semantics about the data.
+
+The final representation, like in the core set approach, is the representation learned by a model that is trained on the labeled data. This means our representation will contain more semantic features, but will mean we are bound to the labeling process if we want to use a representation that improves throughout the active learning process.
 
 ## Why This May Be Promising
 This idea takes a very different approach to other active learning methods, in that **it is completely agnostic about the original problem we are trying to solve**, and only focuses on making the labeled set as diverse as possible. In this sense it is similar to the core set approach. This gives it the nice property that there is no need to adapt it to different machine learning scenarios like regression, segmentation and so on.
@@ -71,18 +73,31 @@ Armed with what we learned from the toy problems, we can move on to the more rea
 
 We'll arbitrarily choose a sub-batch amount of 10 and compare the two possible representations on the MNIST dataset:
 
-TODO: insert mnist plot...
+{% include image.html path="DAL/discriminative_mnist_comparison.png" %}
 
 {% include image.html path="DAL/ranking_comparison.png" %}
 
-We can see from the first plot that it is clearly better to use the learned representation, which contains semantic information, as opposed to the raw pixel representation (even if that representation was good enough for the initial experiments).
+We can see from the first plot that it is clearly better to use the learned representation, which contains semantic information, as opposed to the raw pixel representation or the autoencoder one (even if that representation was good enough for the initial experiments).
 
 The ranking correlation plot between the two representations is also rather interesting. The two methods aren't entirely uncorrelated but they are also not correlated in a regular way as we've seen for the uncertainty sampling alternatives. We're not too sure how to explain the straight lines in the top-right quadrant of the plot, but the important region for active learning is the bottom and left regions, which contain the examples that the methods rank as most informative. We can see that there are many examples that one representation ranks as very informative while the other one does not at all (as seen in the bottom-right and top-left quadrants). This explains why we see such a difference in performance between the two representations.
 
+Next, we move to comparing our method to all of the other ones on MNIST and CIFAR-10:
 
-TODO: insert a plot against all of the other methods
+{% include image.html path="DAL/mnist_all.png" %}
 
-TODO: look at the cifar results
+{% include image.html path="DAL/cifar10_all.png" %}
+
+In the MNIST results we see more evidence that our method behaves in a similar way to the core set approach, since their results are more or less identical. This means that on the MNIST dataset we see clear different results between the uncertainty based methods (including the adversarial approach) and the covering based methods (core set and discriminative).
+
+On the CIFAR-10 front we see that the results of our method are in the same ballpark as the other methods, while still being inconclusive and requiring more experiments to reduce the variance of the results.
+
+Finally, let's look at how our method looks in the label entropy metric againt the other methods:
+
+{% include image.html path="DAL/mnist_entropy.png" %}
+
+{% include image.html path="DAL/cifar10_entropy.png" %}
+
+Seems relatively consistent with what we would expect. The CIFAR-10 results are a bit high, but since the results of the experiments aren't conclusive yet, it's hard to say something intelligent about it at this point.
 
 ### Implementation Details
 The binary classification task we are trying to solve is very unbalanced since most of the time we'll have an order of magnitude more unlabeled examples than labeled examples. This means we need to be careful in the way we train our neural network to make sure we don't get a classifier that just thinks everything is "unlabeled".
