@@ -8,41 +8,41 @@ If you made it this far, you've been [introduced][first post] to the active lear
 ## Intuition
 We started with a simple idea - when we are creating a dataset to be labeled that we want to represent the original distribution well, we shouldn't have too many redundant instances. **If we want to learn from new examples, we want them to be different from what we already have**.
 
-So if we were able to look at the unlabeled dataset and find the examples which are the most different from those in our labeled dataset, then picking them will hopefully give us informative samples to learn from.
+So, if we were able to look at the unlabeled dataset and find the examples which are the most different from those in our labeled dataset, then picking them will hopefully give us informative samples to learn from.
 
 ## The Method
 If you buy into this intuition, it isn't hard to think of a method that does just what we want:
 
 Given a labeled set and an unlabeled set that we want to sample a batch from, instead of training a model to solve the original task on the labeled set, **we train a model to classify between the labeled set and the unlabeled set**. We then use that model to **choose the examples which are most confidently classified as being from the unlabeled set**.
 
-Note that the label distribution here is very different from a regular binary classification task - two identical instances of the original distribution can be labeled differently simply depending on whether or not they've been labeled. This classification task resembles [classifying a random labeling][rethinking generalization] more than it does anything else...
+Note that the label distribution here is very different from a regular binary classification task - two identical instances of the original distribution can be labeled differently simply depending on whether they've been labeled. This classification task resembles [classifying a random labeling][rethinking generalization] more than it does anything else...
 
-Assuming that our model can't classify random labels perfectly with 0 loss, we should expect it to more confidently classify unlabeled examples which are far on the data manifold from labeled examples. This behavior should resemble the core set behavior, without being batch aware. Note that if the classifier is expressive enough to completely overfit the data and get a loss of 0, we can just stop training it before that happens.
+Assuming our model can't classify random labels perfectly with 0 loss, we should expect it to more confidently classify unlabeled examples which are far on the data manifold from labeled examples. This behavior should resemble the core set behavior, without being batch aware. Note that if the classifier is expressive enough to completely overfit the data and get a loss of 0, we can just stop training it before that happens.
 
 ### The Representation
 There are three possible representations we can use to train our binary classifier on: 
 
-The first is the **raw data**, which means we are completely agnostic to the labels and the task and are able to run our algorithm asynchronously from the labeling process (which is very nice). That said, this representation makes it hard for the binary classifier to pick up on semantic differences in the data, because it trains on a random labeling of the data. This representation has the advantage of decoupling the active learning process from the labeling process, but will possibly give us poor results.
+The first is the **raw data**, which means we are completely agnostic to the labels and the task and can run our algorithm asynchronously from the labeling process (which is very nice). That said, this representation makes it hard for the binary classifier to pick up on semantic differences in the data, because it trains on a random labeling of the data. This representation has the advantage of decoupling the active learning process from the labeling process but will possibly give us poor results.
 
 A second representation that decouples the active learning process from the labeling process is an **autoencoder embedding of the data in a lower dimension**. This representation has a higher chance of capturing some semantics about the data.
 
-The final representation, like in the core set approach, is the representation learned by a model that is trained on the labeled data. This means our representation will contain more semantic features, but will mean we are bound to the labeling process if we want to use a representation that improves throughout the active learning process.
+The final representation, like in the core set approach, is the representation learned by a model that is trained on the labeled data. This means our representation will contain more semantic features but will mean we are bound to the labeling process if we want to use a representation that improves throughout the active learning process.
 
 ## Why This May Be Promising
 This idea takes a very different approach to other active learning methods, in that **it is completely agnostic about the original problem we are trying to solve**, and only focuses on making the labeled set as diverse as possible. In this sense it is similar to the core set approach. This gives it the nice property that there is no need to adapt it to different machine learning scenarios like regression, segmentation and so on.
 
 Another bonus here, is that **binary classification is relatively easy**. It isn't hard to overfit on two classes (even under random labels) with a modestly sized neural network, and it can be done rather quickly. The MIP formulation of the core set approach for instance is relatively slow.
 
-Lastly, you may say that a conceptual drawback of our method is the fact that it isn't batch-aware like the core set approach. The thing is, since we do not care about the actual labels of the data and only care about whether they are labeled or not, we can transfer chosen examples to the labeled set automatically without needing to wait for an annotator. This means **we can trade off speed for batch awareness**, by sampling sub batches instead of the full batch. For example if our batch size is 100, we can iteratively train the binary classifier, select 10 examples to be "labeled" and then retrain the binary classifier and keep going until we have our final batch of 100 examples.
+Lastly, you may say that a conceptual drawback of our method is the fact that it isn't batch-aware like the core set approach. The thing is, since we do not care about the actual labels of the data and only care about whether they are labeled or not, we can transfer chosen examples to the labeled set automatically without needing to wait for an annotator. This means **we can trade off speed for batch awareness**, by sampling sub batches instead of the full batch. For example, if our batch size is 100, we can iteratively train the binary classifier, select 10 examples to be "labeled" and then retrain the binary classifier and keep going until we have our final batch of 100 examples.
 
 ## Starting Out Small
 So now that we're motivated about our new algorithm, we can implement it on a toy problem and see how it compares to uncertainty sampling. We'll use the MNIST dataset as our toy problem, trying to classify the digits "3" and "5" like we did in the [introduction][first post] (with the representation being the raw data and a logistic regression model):
 
 {% include image.html path="DAL/mnist_discriminative.png" %}
 
-We can see that our method starts out really well, even beating uncertainty sampling a bit(!), but as the experiment progresses we see that it improves more and more slowly until it reaches accuracies that are the same as random sampling... This appears promising, but we have to figure out what happens after the first few iterations that screws our method up.
+We can see that our method starts out really well, even beating uncertainty sampling a bit(!), but as the experiment progresses we see that it improves more and more slowly until it reaches accuracies that are the same as random sampling... This appears promising, but we must figure out what happens after the first few iterations that screws our method up.
 
-Having this kind of unexpected behavior means we're not understanding something basic about our method... So let's make things as simple as possible in order to understand what's going on - let's look at how our method behaves on synthetic 2-dimensional data. Like we did before, we'll make two blobs that are linearly seperable and look at what examples our method chooses:
+Having this kind of unexpected behavior means we're not understanding something basic about our method... So, let's make things as simple as possible in order to understand what's going on - let's look at how our method behaves on synthetic 2-dimensional data. Like we did before, we'll make two blobs that are linearly separable and look at what examples our method chooses:
 
 {% include image.html path="DAL/initial_choices.png" %}
 
@@ -52,20 +52,20 @@ We color discriminative plots differently - red dots are in the labeled set and 
 
 This sort of data is very different from real data. We can't really picture high dimensional data manifolds and our lower dimensional intuitions often fail in high dimensions. still, we can learn a thing or two from looking at toy problems. We can see that in the two cases our method is very different from uncertainty sampling: 
 
-In the first case, uncertainty sampling focuses heavilly on examples which are close to the decision boundary between the two blobs, while our method does the opposite and focuses on examples in the extremes. In hindsight this isn't very surprising, since our method chooses examples which are most confidently classified as "unlabeled", so when we're working with linear classifiers like in this example **our method chooses the examples which are farthest from the decision boundary**. That being said, we should remember that these decision boundaries are different (they are for different classification problems).
+In the first case, uncertainty sampling focuses heavily on examples which are close to the decision boundary between the two blobs, while our method does the opposite and focuses on examples in the extremes. In hindsight this isn't very surprising, since our method chooses examples which are most confidently classified as "unlabeled", so when we're working with linear classifiers like in this example **our method chooses the examples which are farthest from the decision boundary**. That being said, we should remember that these decision boundaries are different (they are for different classification problems).
 
-In the second case, which was specifically hand crafted to fool uncertainty sampling, uncertainty sampling focuses only on examples from the two close clusters while completely ignoring the other clusters which are informative and would lead to a better classification accuracy. Our method on the other hand does the exact opposite and quickly queries an example from each of the clusters. This hints at another behavior our method has which is similar to the core set approach - **the discriminative method starts by covering the different modes of the distribution**. While this looks great and seems like a problem for uncertainty sampling, we should say that this kind of data rarely exists in high dimensions, and we don't get real data that uncertainty sampling fails on this badly.
+In the second case, which was specifically hand crafted to fool uncertainty sampling, uncertainty sampling focuses only on examples from the two close clusters while completely ignoring the other clusters which are informative and would lead to a better classification accuracy. Our method on the other hand does the exact opposite and quickly queries an example from each of the clusters. This hints at another behavior our method has which is like the core set approach - **the discriminative method starts by covering the different modes of the distribution**. While this looks great and seems like a problem for uncertainty sampling, we should say that this kind of data rarely exists in high dimensions, and we don't get real data that uncertainty sampling fails on this badly.
 
 These two examples give us some clues as to what happened in the high dimensional MNIST example. It's reasonable to believe that the big boost we got at the first few iterations was due to the "mode covering" behavior of our method, since it starts quickly focusing on the examples which are completely different than the ones currently labeled. We can also guess the reason for the decrease in improvement in the later parts of the experiment - since our method goes for the examples farthest from the decision boundary, it is possible that it **queries a lot of outliers** that don't give enough information on the original classification problem. Once the method successfully covers the modes of the distribution, it stops improving because it keeps choosing examples that aren't at the heart of the classification problem, while uncertainty sampling does the opposite and zeros in exactly on the decision boundary and gets the examples which are most informative.
 
 So now that we have a feel for the method's advantages and disadvantages, we can try and come up with ideas for tweaking our method a little.
 
 ### Handling Outliers
-Our main take away from the toy examples was that our method is susceptible to outliers and possibly focuses too much on examples which are too far away from the decision boundary. We tried coming up with ideas to handle this shortcoming by maybe using a different decision rule instead of cruedly choosing the examples most confidently classified as "unlabeled".
+Our main take away from the toy examples was that our method is susceptible to outliers and possibly focuses too much on examples which are too far away from the decision boundary. We tried coming up with ideas to handle this shortcoming by maybe using a different decision rule instead of crudely choosing the examples most confidently classified as "unlabeled".
 
 The first idea was to use a stochastic decision rule. Instead of making a hard choice, we can sample from the entire unlabeled set with probability weights proportional to a function of the confidence. This is precisely the solution used in the [kmeans++][kmeans++] initialization scheme for the K-means clustering algorithm, and put an emphasis on high confidence examples while lowering the chance of choosing outliers.
 
-Another idea was to formulate the batch decision rule in the same way that the core set approach does, but only over the examples we were confident about (either over a threshold or over a certain amount of examples). We'll use the representation learned by our binary classifier to make that choice. This would ensure we don't pick too many outliers and also help make sure we choose examples which are different from the labeled set in different ways.
+Another idea was to formulate the batch decision rule in the same way that the core set approach does, but only over the examples we were confident about (either over a threshold or over a certain number of examples). We'll use the representation learned by our binary classifier to make that choice. This would ensure we don't pick too many outliers and help make sure we choose examples which are different from the labeled set in different ways.
 
 Sadly, after playing around with these ideas for a while we couldn't get a significant improvement and so we stopped working on this direction...
 
@@ -80,19 +80,19 @@ We'll arbitrarily choose a sub-batch amount of 10 and compare the two possible r
 
 We can see from the first plot that it is clearly better to use the learned representation, which contains semantic information, as opposed to the raw pixel representation or the autoencoder one (even if that representation was good enough for the initial experiments).
 
-The ranking correlation plot between the two representations is also rather interesting. The two methods aren't entirely uncorrelated but they are also not correlated in a regular way as we've seen for the uncertainty sampling alternatives. We're not too sure how to explain the straight lines in the top-right quadrant of the plot, but the important region for active learning is the bottom and left regions, which contain the examples that the methods rank as most informative. We can see that there are many examples that one representation ranks as very informative while the other one does not at all (as seen in the bottom-right and top-left quadrants). This explains why we see such a difference in performance between the two representations.
+The ranking correlation plot between the two representations is also rather interesting. The two methods aren't entirely uncorrelated, but they are also not correlated in a regular way as we've seen for the uncertainty sampling alternatives. We're not too sure how to explain the straight lines in the top-right quadrant of the plot, but the important region for active learning is the bottom and left regions, which contain the examples that the methods rank as most informative. We can see that there are many examples that one representation ranks as very informative while the other one does not at all (as seen in the bottom-right and top-left quadrants). This explains why we see such a difference in performance between the two representations.
 
-Next, we move to comparing our method to all of the other ones on MNIST and CIFAR-10:
+Next, we move to comparing our method to all the other ones on MNIST and CIFAR-10:
 
 {% include image.html path="DAL/mnist_all.png" %}
 
 {% include image.html path="DAL/cifar10_all.png" %}
 
-In the MNIST results we see more evidence that our method behaves in a similar way to the core set approach, since their results are more or less identical. This means that on the MNIST dataset we see clear different results between the uncertainty based methods (including the adversarial approach) and the covering based methods (core set and discriminative).
+In the MNIST results we see more evidence that our method behaves in a similar way to the core set approach, since their results are more or less identical. This means that on the MNIST dataset we see clear different results between the uncertainty-based methods (including the adversarial approach) and the covering based methods (core set and discriminative).
 
 On the CIFAR-10 front we see that the results of our method are in the same ballpark as the other methods, while still being inconclusive and requiring more experiments to reduce the variance of the results.
 
-Finally, let's look at how our method looks in the label entropy metric againt the other methods:
+Finally, let's look at how our method looks in the label entropy metric against the other methods:
 
 {% include image.html path="DAL/mnist_entropy.png" %}
 
@@ -103,7 +103,7 @@ Seems relatively consistent with what we would expect. The CIFAR-10 results are 
 ### Implementation Details
 The binary classification task we are trying to solve is very unbalanced since most of the time we'll have an order of magnitude more unlabeled examples than labeled examples. This means we need to be careful in the way we train our neural network to make sure we don't get a classifier that just thinks everything is "unlabeled".
 
-We found that there were two things that were crucial in this case. First, we need to make sure that the **class weights are balanced**, so that labeled examples will effect the loss function more than unlabeled ones. Second, we need to make sure the **batch size is large** enough so that we have labeled batches in every batch on average. Otherwise, the training process will have many gradients which lead the network to thinking all examples are unlabeled, and that's a local minima that could be hard to get out of. This means that if there are 10 times more unlabeled examples than labeled examples, you should aim for a batch size that isn't much smaller than 64 to be on the safe side.
+We found that there were two things that were crucial in this case. First, we need to make sure that the **class weights are balanced**, so that labeled examples will affect the loss function more than unlabeled ones. Second, we need to make sure the **batch size is large** enough so that we have labeled batches in every batch on average. Otherwise, the training process will have many gradients which lead the network to thinking all examples are unlabeled, and that's a local minimum that could be hard to get out of. This means that if there are 10 times more unlabeled examples than labeled examples, you should aim for a batch size that isn't much smaller than 64 to be on the safe side.
 
 As for the architecture used for the binary classification, we chose to use a MLP architecture (a deep fully connected neural network) for simplicity and speed, and you may take a look at [the code][git] for the exact details which weren't too important. We should note however that since we are basically trying to classify random labels, we're asking the network to overfit a difficult classification task and so **we shouldn't use any form of regularization** (no weight decay, dropout and so on).
 

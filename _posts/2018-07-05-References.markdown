@@ -23,21 +23,21 @@ comments: true
 ### Other Interesting Methods
 
 #### Ensemble Methods
-As we already hinted at, due to the fact that different active learning methods sometimes put emphasis on different examples, it may be beneficial to want to combine these methods together in some way. This hasn't been attempted in a successful way in the batch framework, but there were a few papers that attempted this in the classic framework by formulating the ensemble as different arms in a [multi armed bandit][multi armed] scenario, which is a field that has been studied for many years.
+As we already hinted at, since different active learning methods sometimes put emphasis on different examples, it may be beneficial to want to combine these methods together in some way. This hasn't been attempted in a successful way in the batch framework, but there were a few papers that attempted this in the classic framework by formulating the ensemble as different arms in a [multi armed bandit][multi armed] scenario, which is a field that has been studied for many years.
 
 If you're interested, [this paper][bandit1] and [this paper][bandit2] are good places to start.
 
 #### Meta Learning
-The field of meta learning is picking up a lot of speed in recent years, with the promise of being able to stop using algorithms based on heuristics in many fields, and replacing them with algorithms that are learned. In the end of the day, **an algorithm is a function** which takes in examples and outputs a function. Becuase it's a function, we can approximate it using soome neural network architecture and try to learn the weights that will give us a great algorithm.
+The field of meta learning is picking up a lot of speed in recent years, with the promise of being able to stop using algorithms based on heuristics in many fields and replacing them with algorithms that are learned. In the end of the day, **an algorithm is a function** which takes in examples and outputs a function. Because it's a function, we can approximate it using some neural network architecture and try to learn the weights that will give us a great algorithm.
 
 Meta learning has been used to try and tackle many types of problems, and active learning is one of them. If you're interested, take a look at [this paper][meta1], [this paper][meta2] and [this paper][meta3].
 
 #### Membership Query Synthesis Using GANs
-We introduced membership query synthesis as a different framework for active learning, where the learner synthesizes new examples to be labeled by the annotator. Due to the fact that the learner needs to have a strong model of the data distribution in order to synthesize examples which can be labeled by an annotator (and which aren't pure noise), this field slowly faded away.
+We introduced membership query synthesis as a different framework for active learning, where the learner synthesizes new examples to be labeled by the annotator. Since the learner needs to have a strong model of the data distribution in order to synthesize examples which can be labeled by an annotator (and which aren't pure noise), this field slowly faded away.
 
 Thanks to huge improvements in the field of generative models brought by [GANs][gan], this is no longer such a problem and the field of membership query synthesis has been revisited with modern approaches. The results aren't mind blowing yet, but there is reason to be hopeful. You're welcome to [read the paper][gan paper].
 
-### Applications For Optimizing Neural Networks
+### Applications for Optimizing Neural Networks
 Finally, there is a very interesting application of active learning in the rather surprising field of optimization. Neural networks are almost exclusively trained using mini batch SGD, where the mini batch is uniformly drawn from the training set.
 
 By now you can probably guess how this process can be improved, since random sampling is something we've spent the whole blog trying to beat. Instead of trying to get a diverse and representative labeled sample from our data distribution, we can use active learning here to get a mini batch that is most informative for training the network and will lead to faster convergence of the network (and maybe even to a better optimum).
