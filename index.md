@@ -1,5 +1,5 @@
 ---
-layout: home
+layout: post
 title: Active Learning Review
 comments: true
 ---
