@@ -106,9 +106,7 @@ We found that there were two things that were crucial in this case. First, we ne
 
 As for the architecture used for the binary classification, we chose to use a MLP architecture (a deep fully connected neural network) for simplicity and speed, and you may take a look at [the code][git] for the exact details which weren't too important. We should note however that since we are basically trying to classify random labels, we're asking the network to overfit a difficult classification task and so **we shouldn't use any form of regularization** (no weight decay, dropout and so on).
 
-
-
-TODO: combining methods...
+TODO: discuss the effects of the sub-batch size with respect to running time and accuracy... Write that the size used in the comparisons was 10 for MNIST and 25 for CIFAR-10.
 
 
 [first post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/AL-Intro.html
