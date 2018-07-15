@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Comparing The Methods
+comments: true
 ---
 ## Disclaimers
 In the [previous post][previous post] we surveyed some of today's state of the art active learning methods, applied to deep learning models. In this post we will compare the methods in different situations and try to understand which is better. If you're interested in our implementation of these methods and in code that can recreate these experiments, you're welcome to check out the [github repository][git] which contains all of the code.

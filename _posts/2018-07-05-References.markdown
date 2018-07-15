@@ -1,6 +1,7 @@
 ---
 layout: post
 title: References
+comments: true
 ---
 
 ### Active Learning Surveys & Benchmarks

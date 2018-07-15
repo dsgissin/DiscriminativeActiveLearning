@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Conclusion
+comments: true
 ---
 
 In this blog series we've covered the framework of active learning from it's initial formulation and algorithms and up to today's state of the art methods. We tried to be concise but there was a lot to take in, so we'll detail the most important take home messages from all of this in our mind.

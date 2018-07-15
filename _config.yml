@@ -9,6 +9,9 @@ github_username: dsgissin
 
 google_analytics: UA-122375369-1
 
+disqus:
+  shortname: discriminativeactivelearning
+
 markdown: kramdown
 theme: minima
 plugins:

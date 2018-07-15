@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Introduction to Active Learning
+comments: true
 ---
 ## The Basic Setup
 The idea of AL is, instead of just giving the learner a lot of data to learn from, to **allow the learner to ask questions** about the given data. In particular, the learner gets to ask an oracle (some human annotator) about the label of certain instances that are currently unlabeled. If the learner asks smart questions, he might be able to get examples that are very informative and reach a high level of generalization accuracy with a much smaller labeled dataset than he would have if that dataset had been created using random sampling.

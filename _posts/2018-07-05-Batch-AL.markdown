@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Batch Active Learning
+comments: true
 ---
 ## Making Active Learning Practical - Batch Queries
 In our [last post][previous post], we learned about the active learning framework. In our framework, there is a large pool of easily gathered unlabeled data, and our learner helps reduce the labeling costs by asking for labels one at a time from the unlabeled pool. We saw a few possible query strategies that the learner can use, and that they can reduce the labeling costs significantly.

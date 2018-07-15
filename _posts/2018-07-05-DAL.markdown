@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Discriminative Active Learning
+comments: true
 ---
 If you made it this far, you've been [introduced][first post] to the active learning framework, saw how to [extend][second post] the framework to more realistic settings and have seen ways of [comparing active learning methods][third post]. We'll now detail the thought process and experiments we ran when trying to come up with a new method - discriminative active learning.
 
