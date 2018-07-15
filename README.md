@@ -14,7 +14,7 @@ In order to run our code, you'll need these main packages:
 - [TensorFlow](https://www.tensorflow.org/)>=1.5
 - [Keras](https://keras.io/)>=2.2
 - [Gurobi](http://www.gurobi.com/documentation/)>=8.0 (for the core set MIP query strategy)
-- [Cleverhans](https://github.com/tensorflow/cleverhans)>=2.1 (for the adversarial query strategy
+- [Cleverhans](https://github.com/tensorflow/cleverhans)>=2.1 (for the adversarial query strategy)
 
 ## Running the Code
 
