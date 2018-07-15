@@ -13,7 +13,7 @@ The thing is, **almost every research paper on modern active learning uses the s
 This means that if you want to try active learning in a new domain, choosing the state of the art method on MNIST isn't necessarily the right thing to do. If you have a good amount of labeled data to start with, it could be worth the time to **experiment with the different methods** like we did here. Otherwise, you should probably **avoid the methods which are more prone to change with the domain** (EGL in particular).
 
 ### The Batch Size Doesn't Matter That Much
-Contrary to what we would expect and what is repeated in many papers on the subject, we didn't find that the size of the batch made a big difference on the success of the greedy algorithm. Even in very large batch sizes which are more suitable for industry applications we get great results for greedy methods such as uncertainty sampling and the adversarial approach.
+Contrary to what we would expect and what is repeated in many papers on the subject, we didn't find that the size of the batch made a big difference on the success of the greedy algorithm. Even in very large batch sizes which are more suitable for industry applications we get great results for greedy methods such as uncertainty sampling and the adversarial approach. Increasing the batch size only helped the batch aware methods we examined (core set and ours).
 
 While these experiments aren't enough to make a definitive claim about this, since we only tried a batch size of 5000 on CIFAR-10, they do suggest that the batch size might not be as big a problem as initially thought.
 

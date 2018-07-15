@@ -52,14 +52,16 @@ First, let's compare the methods separately against random sampling, the usual b
 ### Uncertainty Sampling Methods
 We'd like to see how much does the Bayesian approach to uncertainty estimation in neural networks improves performance in active learning in comparison to the regular uncertainty sampling which simply uses the softmax scores. In the following plot we compare the different methods, along with the different possible decision rules (top confidence and max entropy):
 
-TODO: add uncertainty comparison
-TODO: compare to entropy as well?
-TODO: is this different than results in the papers?
+{% include image.html path="Experiments/uncertainty_comparison.png" %}
+
+We can see that the differences are more or less negligible, with all of the alternatives performing much better than random sampling. The only real difference we can note is that the top confidence decision rule is better than the entropy one at the initial stages of the active learning process. These results are more or less consistent with what is presented in the paper.
+
+Following this comparison we will only use the regular uncertainty sampling for our comparisons to make the graphs more readable.
 
 ### Adversarial Active Learning
 We have only one formulation of this method that we checked, which corresponds to the formulation in the paper. Let's see how it compares to random sampling:
 
-TODO: compare to random sampling...
+{% include image.html path="Experiments/results_mnist_Adversarial.png" %}
 
 ### Core Set Methods
 Next, we compare the greedy core set method with the MIP formulation. As detailed in the core set paper, adding the MIP formulation increases the running time of the core set algorithm considerably (and we saw this in our experiments as well). Also, during these experiments we were unable to run the MIP formulation on the full MNIST dataset (which has 50,000 examples), due to memory issues. This can be resolved by using frameworks that handle large optimization problems such as this, but this was outside the scope of this project. We chose to **subsample 3000 unlabeled examples** and run the MIP formulation on that subset (along with the labeled set). This is different than what was reported in the core set paper, and so our results might be different due to this difference. We also changed the amount of outliers allowed in the formulation to be a constant of **250 outliers**, which is also different from what was reported in the paper.
@@ -84,7 +86,14 @@ This was also the case in the adversarial paper when they tried to compare their
 We'll explain what we think happened later in the post.
 
 ### Full Comparison
-TODO: what's different than reported in the papers? why is uncertainty so good?
+
+So how are the methods ranked against each other on the MNIST dataset?
+
+{% include image.html path="Experiments/results_mnist_all.png" %}
+
+Interestingly, we see that the adversarial approach is on par with the uncertainty based approach. A possible explanation for this (which we'll see more evidence for later) is that **the adversarial approach is in general very similar to the uncertainty based methods**. We saw that in the linear case the margin based methods are the same as the uncertainty ones, and the adversarial approach is a margin based approach...
+
+While the adversarial and uncertainty methods look simlar, we see that the core set approach is different from them (and a bit worse on MNIST). This can possibly be attributed to the small batch size, since the core set approach is designed for large batch sizes in order to take advantage of having a batch that is as diverse as possible.
 
 But all of this is just a comparison on MNIST, the most worn out dataset in history. We'd like to compare the methods on more realistic datasets and with a larger batch size, which simulates real-life active learning problems better. For that we turn to a image classification dataset that is only a bit less worn out - [CIFAR][CIFAR]!
 
@@ -95,10 +104,13 @@ We chose this batch size both because it was the setting in the core set paper, 
 
 However because the batch size is so big here, our computational constraints made it impossible to use the MIP formulation of the core set approach (5000 examples was the largest amount we were able to work with on the MNIST experiments). While we hoped to compare the methods in a fair way, we take comfort in the fact that this is the exact setting used in the core set paper and the results we got in other experiments are similar to those in the paper, so we refer to the author's results. They report that the MIP formulation improves the greedy results during the experiments by ~2% throughout the active learning process.
 
+{% include image.html path="Experiments/results_cifar10_comparison.png" %}
 
+So we see that in CIFAR-10 there is still a clear advantage for the different methods against random sampling (except for EGL). That being said, the results for comparing the methods against each other are inconclusive because they all seem to be relatively close to each other - we'll need to run more experiments to reduce the variance of these results. 
 
-## CIFAR-100 Comparison
-which model was used?
+Still, we can take a couple of things away from these results. First, the success of these active learning methods isn't restricted to toy problems like MNIST - the results are clearly an improvement over random sampling. Second, we see that when we raise the batch size to 5000, **the greedy methods still continue to perform well** which isn't necessarily what we see in the core set paper. We do see that the batch aware methods do much better in a larger, more realistic batch size, but in this experiment that didn't cause the greedy methods to perform poorly.
+
+As for how all of these results compare to the literature, we should point out one difference that keeps coming back - **uncertainty sampling gives us consistently good results while it gives weaker results in the papers**. The Bayesian active learning paper doesn't provide comparisons to the regular uncertainty sampling, while the adversarial approach paper seems to suggest that the uncertainty sampling method (along with the Bayesian adaptation) perform worse than random sampling for most of the active learning process, a result that is far from what we saw here. In the core set approach's paper when comparing on CIFAR-10 data we also see that uncertainty sampling and the Bayesian approach are more or less on par with random sampling, which is also not the case in our experiments. This is quite surprising since the uncertainty sampling method is very simple and easy to implement, but these differences could be due to differences in the experimental setup between the papers and us.
 
 ## Batch Composition & Label Entropy
 In this section we'll try to learn more about the behavior of the algorithms by looking at how a queried batch is distributed across the different classes. We did this both as a sanity measure and to try and understand why EGL's results were so bad, under the hypothesis that it is because there is very high correlation between the examples that are queried by EGL.
@@ -113,9 +125,9 @@ It isn't very difficult to record this label entropy in our experiments, and so 
 
 {% include image.html path="Experiments/results_mnist_entropy_cumulative.png" %}
 
-TODO: insert picture of CIFAR here
+{% include image.html path="Experiments/results_cifar10_entropy_cumulative.png" %}
 
-This is very interesting - except for the random sampling which has the highest label entropy (unsurprisingly), we see a **one to one correlation between the accuracy ranking of the methods and their label entropy!** This is quite pleasing and shows that this measure can be used as a proxy for the success of an active learning method practice. If the method you're using has a label distribution that is far from the label distribution you expect for your data, you should suspect that the method isn't working very well...
+This is very interesting - except for the random sampling which has the highest label entropy (unsurprisingly), we see a **very strong correlation between the accuracy ranking of the methods and their label entropy!** This is quite pleasing and shows that this measure can possibly be used as a proxy for the success of an active learning method practice. If the method you're using has a label distribution that is far from the label distribution you expect for your data, you may suspect that the method isn't working very well...
 
 Another interesting thing to note here is the label entropy of EGL which is much, much lower than all of the others, and barely improves during the process. This confirms our suspicions - EGL continuously queries examples from the same few classes, and does not lead to a balanced labeled dataset. This explains the poor performance it had during our experiments...
 
@@ -132,7 +144,7 @@ We'll start by comparing two methods which we should expect to be similar - unce
 
 {% include image.html path="Experiments/results_mnist_ranking_uncertainty_bayesian.png" %}
 
-Indeed, we got that the two methods rank the unlabeled examples in a very similar way. Next we can have a look at the adversarial method. It's intuition is similar to that of uncertainty sampling and as we saw in earlier posts, they are the same thing in linear models. Do they behave similarly when applied to highly non linear functions like neural nets?
+Indeed, we got that the two methods rank the unlabeled examples in a very similar way. Next we can have a look at the adversarial method. We saw in the comparison on MNIST that the methods perform similarly and they're intuition is similar, so do they behave similarly?
 
 {% include image.html path="Experiments/results_mnist_ranking_uncertainty_adversarial.png" %}
 
@@ -143,7 +155,6 @@ While the two methods are very different in what they do, the eventual results a
 Finally, we'll have a look at EGL compared to uncertainty sampling. We expect there to be little correlation since we saw EGL selects examples predominately from the same class...
 
 {% include image.html path="Experiments/results_mnist_ranking_uncertainty_egl.png" %}
-
 
 ## Summary
 In this post we empirically compared the different methods that we detailed in the last post, using the MNIST and CIFAR datasets. We saw the effect of the batch size on the different methods, and reviewed two additional interesting ways to compare active learning methods - the label entropy and the ranking comparison.
