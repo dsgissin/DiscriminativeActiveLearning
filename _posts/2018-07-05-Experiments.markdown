@@ -107,7 +107,7 @@ However, because the batch size is so big here, our computational constraints ma
 
 {% include image.html path="Experiments/results_cifar10_comparison.png" %}
 
-So, we see that in CIFAR-10 there is still a clear advantage for the different methods against random sampling. Also, we can see that the tested methods perform more or less the same, and their differences are negligable.
+So, we see that in CIFAR-10 there is still a clear advantage for the different methods against random sampling. Also, we can see that the tested methods perform more or less the same and that their differences are negligable.
 
 We can take a couple of things away from these results. First, the success of these active learning methods isn't restricted to toy problems like MNIST - the results are clearly an improvement over random sampling even in CIFAR-10. Second, we see that when we raise the batch size to 5000, **the greedy methods continue to perform well** which isn't necessarily what we see in the core set paper or what we would intuitively expect. However, we do see that the batch aware methods perform much better in a larger, more realistic batch size.
 

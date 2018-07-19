@@ -88,9 +88,7 @@ Next, we move to comparing our method to all the other ones on MNIST and CIFAR-1
 
 {% include image.html path="DAL/cifar10_all.png" %}
 
-In the MNIST results we see more evidence that our method behaves in a similar way to the core set approach, since their results are more or less identical. This means that on the MNIST dataset we see clear different results between the uncertainty-based methods (including the adversarial approach) and the covering based methods (core set and discriminative).
-
-On the CIFAR-10 front we see that the results of our method are in the same ballpark as the other methods, while still being inconclusive and requiring more experiments to reduce the variance of the results.
+In the MNIST results we see more evidence that our method behaves in a similar way to the core set approach, since their results are more or less identical. This means that on the MNIST dataset we see clear different results between the uncertainty-based methods (including the adversarial approach) and the covering based methods (core set and discriminative). On the CIFAR-10 front we see that our method is on par with the rest of the methods, having negligible differences to the other ones.
 
 Finally, let's look at how our method looks in the label entropy metric against the other methods:
 
@@ -99,6 +97,10 @@ Finally, let's look at how our method looks in the label entropy metric against 
 {% include image.html path="DAL/cifar10_entropy.png" %}
 
 Seems relatively consistent with what we would expect. The CIFAR-10 results are a bit high, but since the results of the experiments aren't conclusive yet, it's hard to say something intelligent about it at this point.
+
+TODO: change the above to be the relevant CIFAR-10 results (they are conclusive)
+
+TODO: I didn't use the robust approach of the core set for CIFAR-10...
 
 ### Implementation Details
 The binary classification task we are trying to solve is very unbalanced since most of the time we'll have an order of magnitude more unlabeled examples than labeled examples. This means we need to be careful in the way we train our neural network to make sure we don't get a classifier that just thinks everything is "unlabeled".
