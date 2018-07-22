@@ -12,7 +12,7 @@ The classic motivating example would be the following 2-dimensional data, which 
 
 Clearly, we can separate these two blobs linearly using a vertical decision boundary, but this is not so obvious when we only get to see the labels for a small number of these points. Given the wrong subset of these points, we could choose a decision boundary that fails to separate the data correctly...
 
-Let's compare random sampling to an active learning algorithm called "uncertainty sampling" (which we will explain later). Both algorithms get one initial labeled point from each blob (marked in red) and sequentially ask for the label of an additional point (marked in green). In every iteration, we train a SVM classifier on the labeled set:
+Let's compare random sampling to an active learning algorithm called "uncertainty sampling" (which we will explain later). Both algorithms get one initial labeled point from each blob (marked in red) and sequentially ask for the label of an additional point (marked in green). In every iteration, we train a linear [SVM][svm] classifier on the labeled set:
 
 {% include image.html path="AL-Intro/blobs-AL.png" %}
 
@@ -84,7 +84,7 @@ $$ \underset{x}{\mathrm{argmax}}\,\sum_{y \in Y}\hat{P}(y|x)||\frac{\partial l(x
 
 ## Summary
 
-In this post we learned about the basics of active learning. We saw that if extend the supervised learning model to allow the learner to ask query specific examples to be labeled, we can significantly reduce the number of samples needed to get the desired accuracy. We also went over the classic query strategies which achieve that improvement.
+In this post we learned about the basics of active learning. We saw that if we extend the supervised learning model to allow the learner to query specific examples to be labeled, we can significantly reduce the number of samples needed to get the desired accuracy. We also went over the classic query strategies which achieve that improvement.
 
 But the active learning scenario we introduced has some big limitations if we want to really implement it in real life applications. Our scenario assumes that the learner asks for the label of a **single example**, but that means that we need to wait for our neural network to converge for every single query, and that can take a long, long time. Also, it means we can't use many human annotators, which is the strength of services like [Mechanical Turk][turk].
 
@@ -92,4 +92,5 @@ In the [next post][next post], we'll dive into the more practical scenario for a
 
 
 [turk]: https://www.mturk.com/
+[svm]: https://en.wikipedia.org/wiki/Support_vector_machine
 [next post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Batch-AL.html
