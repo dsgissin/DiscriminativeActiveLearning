@@ -111,6 +111,8 @@ Finally, let's look at how our method looks in the label entropy metric against 
 
 {% include image.html path="DAL/cifar10_entropy.png" %}
 
+TODO: add ranking comparison of raw pixels and autoencoder embedding
+
 Seems relatively consistent with what we would expect... Our method has results which are a bit too high for its actual accuracy scores, but that's not a problem since this measure is only a heuristic.
 
 TODO: I didn't use the robust approach of the core set for CIFAR-10...
