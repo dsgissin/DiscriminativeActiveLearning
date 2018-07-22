@@ -3,7 +3,7 @@ layout: post
 title: Discriminative Active Learning
 comments: true
 ---
-If you made it this far, you've been [introduced][first post] to the active learning framework, saw how to [extend][second post] the framework to more realistic settings and have seen ways of [comparing active learning methods][third post]. We'll now detail the thought process and experiments we ran when trying to come up with a new method - discriminative active learning.
+If you made it this far, you've been [introduced][first post] to the active learning framework, saw how to [extend][second post] the framework to more realistic settings and have seen ways of [comparing active learning methods][third post]. We'll now detail the thought process and experiments we ran when trying to come up with a new method - discriminative active learning (DAL).
 
 ## Intuition
 We started with a simple idea - when we are creating a dataset to be labeled that we want to represent the original distribution well, we shouldn't have too many redundant instances. **If we want to learn from new examples, we want them to be different from what we already have**.
@@ -31,9 +31,9 @@ The final representation, like in the core set approach, is the representation l
 ## Why This May Be Promising
 This idea takes a very different approach to other active learning methods, in that **it is completely agnostic about the original problem we are trying to solve**, and only focuses on making the labeled set as diverse as possible. In this sense it is similar to the core set approach. This gives it the nice property that there is no need to adapt it to different machine learning scenarios like regression, segmentation and so on.
 
-Another bonus here, is that **binary classification is relatively easy**. It isn't hard to overfit on two classes (even under random labels) with a modestly sized neural network, and it can be done rather quickly. The MIP formulation of the core set approach for instance is relatively slow.
+Another bonus here, is that **binary classification is relatively easy**. It isn't hard to overfit on two classes (even under random labels) with a modestly sized neural network, and it can be done rather quickly. The MIP formulation of the core set approach for instance is relatively slow and doesn't scale as well.
 
-Lastly, you may say that a conceptual drawback of our method is the fact that it isn't batch-aware like the core set approach. The thing is, since we do not care about the actual labels of the data and only care about whether they are labeled or not, we can transfer chosen examples to the labeled set automatically without needing to wait for an annotator. This means **we can trade off speed for batch awareness**, by sampling sub batches instead of the full batch. For example, if our batch size is 100, we can iteratively train the binary classifier, select 10 examples to be "labeled" and then retrain the binary classifier and keep going until we have our final batch of 100 examples.
+Lastly, you may say that a conceptual drawback of our method is the fact that it isn't batch-aware like the core set approach. The thing is, since we do not care about the actual labels of the data and only care about whether they are labeled or not, we can transfer chosen examples to the labeled set automatically without needing to wait for an annotator. This means **we can trade off speed for batch awareness**, by iteratively sampling sub-batches instead of the full batch. For example, if our batch size is 100, we can iteratively train the binary classifier, select 10 examples to be "labeled" and then retrain the binary classifier and keep going until we have our final batch of 100 examples.
 
 ## Starting Out Small
 So now that we're motivated about our new algorithm, we can implement it on a toy problem and see how it compares to uncertainty sampling. We'll use the MNIST dataset as our toy problem, trying to classify the digits "3" and "5" like we did in the [introduction][first post] (with the representation being the raw data and a logistic regression model):
@@ -72,7 +72,9 @@ Sadly, after playing around with these ideas for a while we couldn't get a signi
 ## Experiments with Neural Nets in the Batch Setting
 Armed with what we learned from the toy problems, we can move on to the more realistic challenges of testing our method in the batch setting, on bigger datasets and with neural networks. In this setting we have a few new parameters to deal with - we need to choose the representation to work with (the raw data or the learned representation) and we need to choose how many sub-batches to query.
 
-We'll arbitrarily choose a sub-batch amount of 10 and compare the two possible representations on the MNIST dataset:
+### Representation Comparison
+
+We'll arbitrarily choose a sub-batch amount of 10 and compare the possible representations on the MNIST dataset:
 
 {% include image.html path="DAL/discriminative_mnist_comparison.png" %}
 
@@ -82,13 +84,26 @@ We can see from the first plot that it is clearly better to use the learned repr
 
 The ranking correlation plot between the two representations is also rather interesting. The two methods aren't entirely uncorrelated, but they are also not correlated in a regular way as we've seen for the uncertainty sampling alternatives. We're not too sure how to explain the straight lines in the top-right quadrant of the plot, but the important region for active learning is the bottom and left regions, which contain the examples that the methods rank as most informative. We can see that there are many examples that one representation ranks as very informative while the other one does not at all (as seen in the bottom-right and top-left quadrants). This explains why we see such a difference in performance between the two representations.
 
+### Sub-Batch Amount
+Next, we turn to compare our method using different amounts of sub-batches (the amount of times we run the binary classification process until we query the entire batch). If we want to query 100 examples we can do anything between choosing the top 100 instances that are classified as "unlabeled" using a single classifier, up to iteratively running 100 classifiers and taking the top single instance at every time.
+
+Intuitively, the larger the amount of sub-batches the better, since we have less of a chance of getting similar instances and we become more batch-aware. To check this intuition, we ran four different sub-batch amounts on the MNIST dataset and compared the results:
+
+{% include image.html path="DAL/batch_size.png" %}
+
+We can see that using a single sub-batch (getting the top-100 instances once) is definitely worse than using a few sub-batches, but as we increase the amount the improvement gets less significant. Still, it is reasonable to say that the more sub-batches we use the better our results will be, which leads to a tradeoff between running time and performance. Also, the more classes we have in our dataset (or more modes in our data distribution), the more we should expect this parameter to be significant...
+
+As for the sub-batch amount that was used in the following experiments where we compared DAL to the other methods, we used 10 sub-batches on MNIST and 25 sub-batches on CIFAR-10.
+
+### MNIST & CIFAR-10 Comparison
+
 Next, we move to comparing our method to all the other ones on MNIST and CIFAR-10:
 
 {% include image.html path="DAL/mnist_all.png" %}
 
 {% include image.html path="DAL/cifar10_all.png" %}
 
-In the MNIST results we see more evidence that our method behaves in a similar way to the core set approach, since their results are more or less identical. This means that on the MNIST dataset we see clear different results between the uncertainty-based methods (including the adversarial approach) and the covering based methods (core set and discriminative). On the CIFAR-10 front we see that our method is on par with the rest of the methods, having negligible differences to the other ones.
+In the MNIST results we see more evidence that our method behaves in a similar way to the core set approach, since their results are more or less identical. This means that on the MNIST dataset there is a clear distinction between the results of the uncertainty-based methods (including the adversarial approach) and the covering based methods (core set and discriminative). On the CIFAR-10 front we see that our method is on par with the rest of the methods, having negligible differences to the other ones.
 
 Finally, let's look at how our method looks in the label entropy metric against the other methods:
 
@@ -100,23 +115,14 @@ Seems relatively consistent with what we would expect... Our method has results 
 
 TODO: I didn't use the robust approach of the core set for CIFAR-10...
 
+TODO: we aren't really negligable on CIFAR, are we? Should we try running the stochastic method for outlier robusteness?
+
 ### Implementation Details
 The binary classification task we are trying to solve is very unbalanced since most of the time we'll have an order of magnitude more unlabeled examples than labeled examples. This means we need to be careful in the way we train our neural network to make sure we don't get a classifier that just thinks everything is "unlabeled".
 
 We found that there were two things that were crucial in this case. First, we need to make sure that the **class weights are balanced**, so that labeled examples will affect the loss function more than unlabeled ones. Second, we need to make sure the **batch size is large** enough so that we have labeled batches in every batch on average. Otherwise, the training process will have many gradients which lead the network to thinking all examples are unlabeled, and that's a local minimum that could be hard to get out of. This means that if there are 10 times more unlabeled examples than labeled examples, you should aim for a batch size that isn't much smaller than 64 to be on the safe side.
 
-As for the architecture used for the binary classification, we chose to use a MLP architecture (a deep fully connected neural network) for simplicity and speed, and you may take a look at [the code][git] for the exact details which weren't too important. We should note however that since we are basically trying to classify random labels, we're asking the network to overfit a difficult classification task and so **we shouldn't use any form of regularization** (no weight decay, dropout and so on).
-
-#### Sub-Batch Amount
-A hyper parameter of our algorithm that we didn't discuss is the amount of sub-batches - the amount of times we run the binary classification process until we query the entire batch. If we want to query 100 examples we can do anything from choose the top 100 instances that are classified as "unlabeled" using a single classifier, up to iteratively running 100 classifiers and taking the top single instance at every time.
-
-Intuitively, the larger the amount of sub-batches the better, since we have less of a chence of getting similar instances. To check this intuition, we ran four different sub-batch amounts on the MNIST dataset and compared the results:
-
-{% include image.html path="DAL/batch_size.png" %}
-
-We can see that using a single sub-batch (getting the top-100 instances once) is definitely worse than using a few sub-batches, but as we increase the amount the improvement gets less significant. Still, it is reasonable to say that the more sub-batches we use the better our results will be, which leads to a tradeoff between running time and performance.
-
-As for the sub-batch amount that was used in the experiments where we compared DAL to the other methods, we used 10 sub-batches on MNIST and 25 sub-batches on CIFAR-10.
+As for the architecture used for the binary classification, we chose to use a [MLP][mlp] architecture (a deep fully connected neural network) for simplicity and speed, and you may take a look at [the code][git] for the exact details which weren't too important. We should note however that since we are basically trying to classify random labels, we're asking the network to overfit a difficult classification task and so **we shouldn't use any form of regularization** (no weight decay, dropout and so on).
 
 ## Summary
 In this post we introduced **Discriminative Active Learning (DAL)**, a new active learning algorithm for the batch setting. We gave some intuition as to why the method should work, and presented the thought process and experiments we ran until we got our final algorithm.
@@ -131,4 +137,5 @@ In the [next post][conclusion] we will conclude this blog series by quickly goin
 [rethinking generalization]: https://arxiv.org/abs/1611.03530
 [kmeans++]: https://en.wikipedia.org/wiki/K-means%2B%2B
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning
+[mlp]: https://en.wikipedia.org/wiki/Multilayer_perceptron
 [conclusion]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Conclusion.html

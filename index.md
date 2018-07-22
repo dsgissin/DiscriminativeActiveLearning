@@ -32,12 +32,6 @@ The blog posts are arranged as follows:
 
 We really hope you enjoy reading through this review of active learning and gain a lot out of it.
 
-TODO:
-
-- hyperlink non obvious things.
-
-
-
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning
 [intro post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/AL-Intro.html
 [batch post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Batch-AL.html
