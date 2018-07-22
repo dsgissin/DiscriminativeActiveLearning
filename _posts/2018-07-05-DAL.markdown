@@ -118,6 +118,12 @@ We can see that using a single sub-batch (getting the top-100 instances once) is
 
 As for the sub-batch amount that was used in the experiments where we compared DAL to the other methods, we used 10 sub-batches on MNIST and 25 sub-batches on CIFAR-10.
 
+## Summary
+In this post we introduced **Discriminative Active Learning (DAL)**, a new active learning algorithm for the batch setting. We gave some intuition as to why the method should work, and presented the thought process and experiments we ran until we got our final algorithm.
+
+We compared DAL to the methods we covered in the [previous post][third post] and saw that it performs similarly to the core set approach, while being easier to implement and more scalable. We also saw that our method shares the task-agnostic nature of the core set approach, making it very easy to adapt to machine learning tasks which aren't classification.
+
+In the [next post][conclusion] we will conclude this blog series by quickly going over what we learned and highlighting what we think are the most important take home messages.
 
 [first post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/AL-Intro.html
 [second post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Batch-AL.html
@@ -125,3 +131,4 @@ As for the sub-batch amount that was used in the experiments where we compared D
 [rethinking generalization]: https://arxiv.org/abs/1611.03530
 [kmeans++]: https://en.wikipedia.org/wiki/K-means%2B%2B
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning
+[conclusion]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Conclusion.html

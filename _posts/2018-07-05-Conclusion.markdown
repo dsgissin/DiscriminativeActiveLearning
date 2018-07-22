@@ -39,4 +39,6 @@ The motivation of this field makes people come at it from many different directi
 
 And that's it. We hope you've enjoyed this blog and gained a lot from it!
 
+TODO: write about our method with core set
+
 [ref]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/References.html
