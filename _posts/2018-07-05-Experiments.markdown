@@ -105,7 +105,13 @@ CIFAR-10 is an image classification dataset with 10 classes. As opposed to the M
 
 We chose this batch size both because it was the setting in the core set paper, and because it gives us a view of a batch size that is orders of magnitude larger than the one usually used when comparing these methods. We also believe that this batch size is much more realistic for industry applications, where the datasets are usually very big and the labeling is paralleled.
 
-However, because the batch size is so big here, our computational constraints made it impossible to use the MIP formulation of the core set approach (5000 examples was the largest amount we were able to work with on the MNIST experiments). While we hoped to compare the methods in a fair way, we take comfort in the fact that this is the exact setting used in the core set paper and the results we got in other experiments are similar to those in the paper, so we refer to the author's results. They report that the MIP formulation improves the greedy results during the experiments by ~2% throughout the active learning process.
+We should note that because the batch size is so big here, it is quite difficult to implement the MIP formulation of the core set approach, and that implementation takes a lot of time to run. In the core set paper the authors show that the MIP formulation gives a small but statistically significant improvement in performance on the CIFAR-10 dataset, but we weren't able to replicate their results. These are the results we got for the variants of the core set approach:
+
+{% include image.html path="Experiments/results_cifar10_core_set.png" %}
+
+We see that the two methods perform more or less the same, with no clear improvement for the MIP formulation. Assuming we implement the MIP formulation correctly (note that it gives an improvement over the greedy method on MNIST), a possible explanation for these results is that being susceptible to outliers is less of an issue when the batch size is so large (they only consist of a small fraction of the batch itself).
+
+That being said, we'll present the results for all of the algorithms (only looking at the greedy core set to make the plot less crowded):
 
 {% include image.html path="Experiments/results_cifar10_comparison.png" %}
 

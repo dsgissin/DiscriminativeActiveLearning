@@ -126,7 +126,7 @@ As for the architecture used for the binary classification, we chose to use a [M
 
 Finally, to insure that our network isn't overfitting the binary classification task too well (which would cause the sampling process to resemble random sampling), if the accuracy of the classifier goes over 98% we stop the training early.
 
-### Attempt at a Variant
+### Attempt at a Stochastic Variant
 As we said earlier in the post, we had a few ideas to try and make our algorithm more robust to outliers. Experiments we ran didn't pan out, and one of them was the following:
 
 We tried to use a stochastic decision rule instead of the hard one, by weighting the probability of choosing an example to be labeled in proportion to a function of the softmax scores of our binary classifier. The function we tried to test was the following, where we denote the predicted probability of being "unlabeled" as \\(y(x)\\):
@@ -137,7 +137,7 @@ In this way, the temperature parameter can help us decide how much we want to pu
 
 {% include image.html path="DAL/temperatures.png" %}
 
-We can see that the smaller the temperature (the more we put an emphasis on the classifiers confidence), the closer we are to the original algorithm. Also, the larger the temperature, the closer we are to random sampling. This is more or less what we would expect, but we also hoped that there would be some sweet spot in the middle of the temperature range where we perform better than the original algorithm, but that isn't the case. 
+We can see that the smaller the temperature (the more we put an emphasis on the classifier confidence), the closer we are to the original algorithm. Also, the larger the temperature, the closer we are to random sampling. This is more or less what we would expect, but we also hoped that there would be some sweet spot in the middle of the temperature range where we perform better than the original algorithm, but that isn't the case. We should say that we checked lower temperatures as well, but they begin to cause numerical problems...
 
 A possible explanation here would be that while the two dimensional toy example gave us a certain intuition (susceptibility to outliers) that breaks down on real, high dimensional data. Regardless, seeing this caused us to stop persuing this direction...
 
