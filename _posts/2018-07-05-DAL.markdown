@@ -67,7 +67,7 @@ The first idea was to use a stochastic decision rule. Instead of making a hard c
 
 Another idea was to formulate the batch decision rule in the same way that the core set approach does, but only over the examples we were confident about (either over a threshold or over a certain number of examples). We'll use the representation learned by our binary classifier to make that choice. This would ensure we don't pick too many outliers and help make sure we choose examples which are different from the labeled set in different ways.
 
-Sadly, after playing around with these ideas for a while we couldn't get a significant improvement and so we stopped working on this direction...
+We tried playing around with these ideas a bit, but sadly couldn't get an improvement over the regular algorithm. Later in this post we'll show one of the experiments we ran to try and make a variant of the algorithm.
 
 ## Experiments with Neural Nets in the Batch Setting
 Armed with what we learned from the toy problems, we can move on to the more realistic challenges of testing our method in the batch setting, on bigger datasets and with neural networks. In this setting we have a few new parameters to deal with - we need to choose the representation to work with (the raw data or the learned representation) and we need to choose how many sub-batches to query.
@@ -111,8 +111,6 @@ Finally, let's look at how our method looks in the label entropy metric against 
 
 {% include image.html path="DAL/cifar10_entropy.png" %}
 
-TODO: add ranking comparison of raw pixels and autoencoder embedding
-
 Seems relatively consistent with what we would expect... Our method has results which are a bit too high for its actual accuracy scores, but that's not a problem since this measure is only a heuristic.
 
 TODO: I didn't use the robust approach of the core set for CIFAR-10...
@@ -125,6 +123,23 @@ The binary classification task we are trying to solve is very unbalanced since m
 We found that there were two things that were crucial in this case. First, we need to make sure that the **class weights are balanced**, so that labeled examples will affect the loss function more than unlabeled ones. Second, we need to make sure the **batch size is large** enough so that we have labeled batches in every batch on average. Otherwise, the training process will have many gradients which lead the network to thinking all examples are unlabeled, and that's a local minimum that could be hard to get out of. This means that if there are 10 times more unlabeled examples than labeled examples, you should aim for a batch size that isn't much smaller than 64 to be on the safe side.
 
 As for the architecture used for the binary classification, we chose to use a [MLP][mlp] architecture (a deep fully connected neural network) for simplicity and speed, and you may take a look at [the code][git] for the exact details which weren't too important. We should note however that since we are basically trying to classify random labels, we're asking the network to overfit a difficult classification task and so **we shouldn't use any form of regularization** (no weight decay, dropout and so on).
+
+Finally, to insure that our network isn't overfitting the binary classification task too well (which would cause the sampling process to resemble random sampling), if the accuracy of the classifier goes over 98% we stop the training early.
+
+### Attempt at a Variant
+As we said earlier in the post, we had a few ideas to try and make our algorithm more robust to outliers. Experiments we ran didn't pan out, and one of them was the following:
+
+We tried to use a stochastic decision rule instead of the hard one, by weighting the probability of choosing an example to be labeled in proportion to a function of the softmax scores of our binary classifier. The function we tried to test was the following, where we denote the predicted probability of being "unlabeled" as \\(y(x)\\):
+
+$$ P(choosing\,x) \propto exp(\frac{y(x)}{T}) $$
+
+In this way, the temperature parameter can help us decide how much we want to put an emphasis on the examples which are "unlabeled" with a high confidence. We ran this algorithm on a wide range of possible temperatures:
+
+{% include image.html path="DAL/temperatures.png" %}
+
+We can see that the smaller the temperature (the more we put an emphasis on the classifiers confidence), the closer we are to the original algorithm. Also, the larger the temperature, the closer we are to random sampling. This is more or less what we would expect, but we also hoped that there would be some sweet spot in the middle of the temperature range where we perform better than the original algorithm, but that isn't the case. 
+
+A possible explanation here would be that while the two dimensional toy example gave us a certain intuition (susceptibility to outliers) that breaks down on real, high dimensional data. Regardless, seeing this caused us to stop persuing this direction...
 
 ## Summary
 In this post we introduced **Discriminative Active Learning (DAL)**, a new active learning algorithm for the batch setting. We gave some intuition as to why the method should work, and presented the thought process and experiments we ran until we got our final algorithm.
