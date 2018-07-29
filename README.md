@@ -1,6 +1,6 @@
 # Discriminative Active Learning
 
-This repository contains the code used to run the deep active learning experiments detailed in our [blog][https://dsgissin.github.io/DiscriminativeActiveLearning/].
+This repository contains the code used to run the deep active learning experiments detailed in our [blog](https://dsgissin.github.io/DiscriminativeActiveLearning/).
 
 You may use the code in this repository, but note that this isn't a complete active learning library and is not fully generic. Replicating the experiments and using the implementations should be easy, but adapting the code to new datasets and experiment types may take a bit of effort.
 
