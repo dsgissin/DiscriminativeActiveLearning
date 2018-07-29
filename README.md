@@ -68,8 +68,8 @@ this file contains the query strategy implementations for all of the methods det
 
 ## Examples
 
-'''
-python3 main.py 0 "mnist" 100 100 20 "Random" "/path/to/experiment/folder" -idx "/path/to/folder/with/initial/index/file"
-python3 main.py 7 "cifar10" 5000 5000 5 "DiscriminativeLearned" "/path/to/experiment/folder" -idx "/path/to/folder/with/initial/index/file"
-python3 main.py 0 "cifar100" 5000 5000 3 "Adversarial" "/path/to/experiment/folder" -method2 "Bayesian" -gpu 2
-'''
+
+    python3 main.py 0 "mnist" 100 100 20 "Random" "/path/to/experiment/folder" -idx "/path/to/folder/with/initial/index/file"
+    python3 main.py 7 "cifar10" 5000 5000 5 "DiscriminativeLearned" "/path/to/experiment/folder" -idx "/path/to/folder/with/initial/index/file"
+    python3 main.py 0 "cifar100" 5000 5000 3 "Adversarial" "/path/to/experiment/folder" -method2 "Bayesian" -gpu 2
+
