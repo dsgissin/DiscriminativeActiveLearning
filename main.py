@@ -20,17 +20,18 @@ def parse_input():
     p.add_argument('initial_size', type=int, help="initial sample size for active learning")
     p.add_argument('iterations', type=int, help="number of active learning batches to sample")
     p.add_argument('method', type=str,
-                   choices={'Random','CoreSet','CoreSetMIP','Discriminative','DiscriminativeLearned','DiscriminativeAE','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial'},
-                   help="sampling method ('Random','CoreSet','CoreSetMIP','Discriminative','DiscriminativeLearned','DiscriminativeAE','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial')")
+                   choices={'Random','CoreSet','CoreSetMIP','MistakeSampling','Discriminative','DiscriminativeLearned','DiscriminativeAE','DiscriminativeStochastic','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial'},
+                   help="sampling method ('Random','CoreSet','CoreSetMIP','MistakeSampling','Discriminative','DiscriminativeLearned','DiscriminativeAE','DiscriminativeStochastic','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial')")
     p.add_argument('experiment_folder', type=str,
                    help="folder where the experiment results will be saved")
     p.add_argument('--method2', '-method2', type=str,
-                   choices={None,'Random','CoreSet','CoreSetMIP','Discriminative','DiscriminativeLearned','DiscriminativeAE','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial'},
+                   choices={None,'Random','CoreSet','CoreSetMIP','MistakeSampling','Discriminative','DiscriminativeLearned','DiscriminativeAE','DiscriminativeStochastic','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial'},
                    default=None,
-                   help="second sampling method ('Random','CoreSet','CoreSetMIP','Discriminative','DiscriminativeLearned','DiscriminativeAE','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial')")
+                   help="second sampling method ('Random','CoreSet','CoreSetMIP','MistakeSampling','Discriminative','DiscriminativeLearned','DiscriminativeAE','DiscriminativeStochastic','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial')")
     p.add_argument('--initial_idx_path', '-idx', type=str,
                    default=None,
                    help="path to a folder with a pickle file with the initial indices of the labeled set")
+    p.add_argument('--gpu', '-gpu', type=int, default=2)
     args = p.parse_args()
     return args
 
@@ -170,7 +171,7 @@ def evaluate_sample(training_function, X_train, Y_train, X_test, Y_test, checkpo
     Y_train = Y_train[int(0.2*Y_train.shape[0]):]
 
     # train and evaluate the model:
-    model = training_function(X_train, Y_train, X_validation, Y_validation, checkpoint_path)
+    model = training_function(X_train, Y_train, X_validation, Y_validation, checkpoint_path, gpu=args.gpu)
     loss, acc = model.evaluate(X_test, Y_test, verbose=0)
 
     return acc, model
@@ -228,12 +229,16 @@ if __name__ == '__main__':
         method = CoreSetSampling
     elif args.method == 'CoreSetMIP':
         method = CoreSetMIPSampling
+    elif args.method == 'MistakeSampling':
+        method = MistakeSampling
     elif args.method == 'Discriminative':
         method = DiscriminativeSampling
     elif args.method == 'DiscriminativeLearned':
         method = DiscriminativeRepresentationSampling
     elif args.method == 'DiscriminativeAE':
         method = DiscriminativeAutoencoderSampling
+    elif args.method == 'DiscriminativeStochastic':
+        method = DiscriminativeStochasticSampling
     elif args.method == 'Uncertainty':
         method = UncertaintySampling
     elif args.method == 'Bayesian':
@@ -256,12 +261,16 @@ if __name__ == '__main__':
             method2 = CoreSetSampling
         elif args.method2 == 'CoreSetMIP':
             method2 = CoreSetMIPSampling
+        elif args.method2 == 'MistakeSampling':
+            method2 = MistakeSampling
         elif args.method2 == 'Discriminative':
             method2 = DiscriminativeSampling
         elif args.method2 == 'DiscriminativeLearned':
             method2 = DiscriminativeRepresentationSampling
         elif args.method2 == 'DiscriminativeAE':
             method2 = DiscriminativeAutoencoderSampling
+        elif args.method2 == 'DiscriminativeStochastic':
+            method2 = DiscriminativeStochasticSampling
         elif args.method2 == 'Uncertainty':
             method2 = UncertaintySampling
         elif args.method2 == 'Bayesian':
@@ -275,7 +284,7 @@ if __name__ == '__main__':
         elif args.method2 == 'Adversarial':
             method2 = AdversarialSampling
         else:
-            print("ERROR - UNKNOWN DECOND METHOD!")
+            print("ERROR - UNKNOWN SECOND METHOD!")
             exit()
     else:
         method2 = None
@@ -283,9 +292,9 @@ if __name__ == '__main__':
 
     # create the QueryMethod object:
     if method2 is not None:
-        query_method = CombinedSampling(None, input_shape, num_labels, method, method2)
+        query_method = CombinedSampling(None, input_shape, num_labels, method, method2, args.gpu)
     else:
-        query_method = method(None, input_shape, num_labels)
+        query_method = method(None, input_shape, num_labels, args.gpu)
 
     # create the checkpoint path:
     if not os.path.isdir(os.path.join(args.experiment_folder, 'models')):

@@ -28,10 +28,11 @@ class QueryMethod:
     A general class for query strategies, with a general method for querying examples to be labeled.
     """
 
-    def __init__(self, model, input_shape=(28,28), num_labels=10):
+    def __init__(self, model, input_shape=(28,28), num_labels=10, gpu=1):
         self.model = model
         self.input_shape = input_shape
         self.num_labels = num_labels
+        self.gpu = gpu
 
     def query(self, X_train, Y_train, labeled_idx, amount):
         """
@@ -55,8 +56,8 @@ class RandomSampling(QueryMethod):
     A basic random sampling query strategy baseline.
     """
 
-    def __init__(self, model, input_shape, num_labels):
-        super().__init__(model, input_shape, num_labels)
+    def __init__(self, model, input_shape, num_labels, gpu):
+        super().__init__(model, input_shape, num_labels, gpu)
 
     def query(self, X_train, Y_train, labeled_idx, amount):
         unlabeled_idx = get_unlabeled_idx(X_train, labeled_idx)
@@ -68,8 +69,8 @@ class UncertaintySampling(QueryMethod):
     The basic uncertainty sampling query strategy, querying the examples with the minimal top confidence.
     """
 
-    def __init__(self, model, input_shape, num_labels):
-        super().__init__(model, input_shape, num_labels)
+    def __init__(self, model, input_shape, num_labels, gpu):
+        super().__init__(model, input_shape, num_labels, gpu)
 
     def query(self, X_train, Y_train, labeled_idx, amount):
 
@@ -87,8 +88,8 @@ class UncertaintyEntropySampling(QueryMethod):
     The basic uncertainty sampling query strategy, querying the examples with the top entropy.
     """
 
-    def __init__(self, model, input_shape, num_labels):
-        super().__init__(model, input_shape, num_labels)
+    def __init__(self, model, input_shape, num_labels, gpu):
+        super().__init__(model, input_shape, num_labels, gpu)
 
     def query(self, X_train, Y_train, labeled_idx, amount):
 
@@ -106,8 +107,8 @@ class BayesianUncertaintySampling(QueryMethod):
     An implementation of the Bayesian active learning method, using minimal top confidence as the decision rule.
     """
 
-    def __init__(self, model, input_shape, num_labels):
-        super().__init__(model, input_shape, num_labels)
+    def __init__(self, model, input_shape, num_labels, gpu):
+        super().__init__(model, input_shape, num_labels, gpu)
 
         self.T = 100
 
@@ -152,8 +153,8 @@ class BayesianUncertaintyEntropySampling(QueryMethod):
     An implementation of the Bayesian active learning method, using maximal entropy as the decision rule.
     """
 
-    def __init__(self, model, input_shape, num_labels):
-        super().__init__(model, input_shape, num_labels)
+    def __init__(self, model, input_shape, num_labels, gpu):
+        super().__init__(model, input_shape, num_labels, gpu)
 
         self.T = 100
 
@@ -199,8 +200,8 @@ class AdversarialSampling(QueryMethod):
     adversarial examples.
     """
 
-    def __init__(self, model, input_shape, num_labels):
-        super().__init__(model, input_shape, num_labels)
+    def __init__(self, model, input_shape, num_labels, gpu):
+        super().__init__(model, input_shape, num_labels, gpu)
 
     def query(self, X_train, Y_train, labeled_idx, amount):
 
@@ -237,7 +238,6 @@ class AdversarialSampling(QueryMethod):
         del deep_fool
         gc.collect()
 
-
         return np.hstack((labeled_idx, unlabeled_idx[selected_indices]))
 
 
@@ -246,11 +246,10 @@ class DiscriminativeSampling(QueryMethod):
     An implementation of DAL (discriminative active learning), using the raw pixels as the representation.
     """
 
-    def __init__(self, model, input_shape, num_labels):
-        super().__init__(model, input_shape, num_labels)
+    def __init__(self, model, input_shape, num_labels, gpu):
+        super().__init__(model, input_shape, num_labels, gpu)
 
         self.sub_batches = 10
-
 
     def query(self, X_train, Y_train, labeled_idx, amount):
 
@@ -265,11 +264,13 @@ class DiscriminativeSampling(QueryMethod):
             if labeled_so_far + sub_sample_size > amount:
                 sub_sample_size = amount - labeled_so_far
 
-            model = train_discriminative_model(X_train[labeled_idx], X_train[unlabeled_idx], self.input_shape)
+            model = train_discriminative_model(X_train[labeled_idx], X_train[unlabeled_idx], self.input_shape, gpu=self.gpu)
             predictions = model.predict(X_train[unlabeled_idx])
             selected_indices = np.argpartition(predictions[:,1], -sub_sample_size)[-sub_sample_size:]
             labeled_idx = np.hstack((labeled_idx, unlabeled_idx[selected_indices]))
             labeled_so_far += sub_sample_size
+            unlabeled_idx = get_unlabeled_idx(X_train, labeled_idx)
+            unlabeled_idx = np.random.choice(unlabeled_idx, np.min([labeled_idx.shape[0]*10, unlabeled_idx.size]), replace=False)
 
             # delete the model to free GPU memory:
             del model
@@ -284,8 +285,8 @@ class DiscriminativeRepresentationSampling(QueryMethod):
     This implementation is the one which performs best in practice.
     """
 
-    def __init__(self, model, input_shape, num_labels):
-        super().__init__(model, input_shape, num_labels)
+    def __init__(self, model, input_shape, num_labels, gpu):
+        super().__init__(model, input_shape, num_labels, gpu)
 
         self.sub_batches = 25
 
@@ -307,11 +308,13 @@ class DiscriminativeRepresentationSampling(QueryMethod):
             if labeled_so_far + sub_sample_size > amount:
                 sub_sample_size = amount - labeled_so_far
 
-            model = train_discriminative_model(representation[labeled_idx], representation[unlabeled_idx], representation[0].shape)
+            model = train_discriminative_model(representation[labeled_idx], representation[unlabeled_idx], representation[0].shape, gpu=self.gpu)
             predictions = model.predict(representation[unlabeled_idx])
             selected_indices = np.argpartition(predictions[:,1], -sub_sample_size)[-sub_sample_size:]
             labeled_idx = np.hstack((labeled_idx, unlabeled_idx[selected_indices]))
             labeled_so_far += sub_sample_size
+            unlabeled_idx = get_unlabeled_idx(X_train, labeled_idx)
+            unlabeled_idx = np.random.choice(unlabeled_idx, np.min([labeled_idx.shape[0]*10, unlabeled_idx.size]), replace=False)
 
             # delete the model to free GPU memory:
             del model
@@ -326,13 +329,12 @@ class DiscriminativeAutoencoderSampling(QueryMethod):
     An implementation of DAL (discriminative active learning), using an autoencoder embedding as our representation.
     """
 
-    def __init__(self, model, input_shape, num_labels):
-        super().__init__(model, input_shape, num_labels)
+    def __init__(self, model, input_shape, num_labels, gpu):
+        super().__init__(model, input_shape, num_labels, gpu)
 
         self.sub_batches = 10
         self.autoencoder = None
         self.embedding = None
-
 
     def query(self, X_train, Y_train, labeled_idx, amount):
 
@@ -358,11 +360,13 @@ class DiscriminativeAutoencoderSampling(QueryMethod):
             if labeled_so_far + sub_sample_size > amount:
                 sub_sample_size = amount - labeled_so_far
 
-            model = train_discriminative_model(self.embedding[labeled_idx], self.embedding[unlabeled_idx], self.embedding[0].shape)
+            model = train_discriminative_model(self.embedding[labeled_idx], self.embedding[unlabeled_idx], self.embedding[0].shape, gpu=self.gpu)
             predictions = model.predict(self.embedding[unlabeled_idx])
             selected_indices = np.argpartition(predictions[:,1], -sub_sample_size)[-sub_sample_size:]
             labeled_idx = np.hstack((labeled_idx, unlabeled_idx[selected_indices]))
             labeled_so_far += sub_sample_size
+            unlabeled_idx = get_unlabeled_idx(X_train, labeled_idx)
+            unlabeled_idx = np.random.choice(unlabeled_idx, np.min([labeled_idx.shape[0]*10, unlabeled_idx.size]), replace=False)
 
             # delete the model to free GPU memory:
             del model
@@ -371,13 +375,110 @@ class DiscriminativeAutoencoderSampling(QueryMethod):
         return labeled_idx
 
 
+class DiscriminativeStochasticSampling(QueryMethod):
+    """
+    An implementation of DAL (discriminative active learning), using the learned representation as our representation
+    and sampling proportionally to the confidence as being "unlabeled".
+    """
+
+    def __init__(self, model, input_shape, num_labels, gpu):
+        super().__init__(model, input_shape, num_labels, gpu)
+
+        self.sub_batches = 10
+        self.temperature = 0.01
+
+    def query(self, X_train, Y_train, labeled_idx, amount):
+
+        # subsample from the unlabeled set:
+        unlabeled_idx = get_unlabeled_idx(X_train, labeled_idx)
+        unlabeled_idx = np.random.choice(unlabeled_idx, np.min([labeled_idx.shape[0]*10, unlabeled_idx.size]), replace=False)
+
+        embedding_model = Model(inputs=self.model.input,
+                                outputs=self.model.get_layer('softmax').input)
+        representation = embedding_model.predict(X_train, batch_size=256).reshape((X_train.shape[0], -1, 1))
+
+        # iteratively sub-sample using the discriminative sampling routine:
+        labeled_so_far = 0
+        sub_sample_size = int(amount / self.sub_batches)
+        while labeled_so_far < amount:
+            if labeled_so_far + sub_sample_size > amount:
+                sub_sample_size = amount - labeled_so_far
+
+            model = train_discriminative_model(representation[labeled_idx], representation[unlabeled_idx], representation[0].shape, gpu=self.gpu)
+            predictions = model.predict(representation[unlabeled_idx])
+            predictions -= 1  # for numerical stability
+            predictions = np.exp(predictions / self.temperature)
+            predictions[:,1] /= np.sum(predictions[:,1])
+            selected_indices = np.random.choice(unlabeled_idx, sub_sample_size, replace=False, p=predictions[:,1])
+
+            labeled_idx = np.hstack((labeled_idx, selected_indices))
+            labeled_so_far += sub_sample_size
+            unlabeled_idx = get_unlabeled_idx(X_train, labeled_idx)
+            unlabeled_idx = np.random.choice(unlabeled_idx, np.min([labeled_idx.shape[0]*10, unlabeled_idx.size]), replace=False)
+
+            # delete the model to free GPU memory:
+            del model
+            gc.collect()
+
+        del embedding_model
+
+        return labeled_idx
+
+
+class MistakeSampling(QueryMethod):
+    """
+    An implementation of the mistake-based query strategy - this idea didn't pan out and wasn't mentioned in the blog... :(
+    """
+
+    def __init__(self, model, input_shape, num_labels, gpu):
+        super().__init__(model, input_shape, num_labels, gpu)
+
+    def get_distances(self, unlabeled_representation, mistakes_representation):
+
+        distances = distance_matrix(np.squeeze(unlabeled_representation), np.squeeze(mistakes_representation))
+        return distances
+
+    def query(self, X_train, Y_train, labeled_idx, amount):
+
+        # subsample from the unlabeled set:
+        unlabeled_idx = get_unlabeled_idx(X_train, labeled_idx)
+
+        embedding_model = Model(inputs=self.model.input,
+                                outputs=self.model.get_layer('softmax').input)
+        representation = embedding_model.predict(X_train, batch_size=256).reshape((X_train.shape[0], -1, 1))
+
+        # find the mistakes:
+        softmax_scores = self.model.predict(X_train[labeled_idx])
+        predictions = np.argmax(softmax_scores, axis=1)
+        labels = np.argmax(Y_train[labeled_idx], axis=1)
+        mistakes = labeled_idx[predictions != labels]
+        print("The Amount of Mistakes is " + str(len(mistakes)))
+        if len(mistakes) < int(amount/10.):
+            top_scores = np.amax(softmax_scores, axis=1)
+            close_calls = np.argpartition(top_scores, int(amount/10.)-len(mistakes))[:int(amount/10.)-len(mistakes)]
+            if len(mistakes) == 0:
+                mistakes = close_calls
+            else:
+                mistakes = np.hstack((mistakes, close_calls))
+
+        # get the distances to the mistakes:
+        distances = self.get_distances(representation[unlabeled_idx], representation[np.squeeze(mistakes)])
+        distances = np.amin(distances, axis=1)
+
+        # choose the unlabeled examples closest to the labeled mistakes:
+        closest = np.argpartition(distances, amount)[:amount]
+
+        del embedding_model
+        return np.hstack((labeled_idx, unlabeled_idx[closest]))
+
+
 class CoreSetSampling(QueryMethod):
     """
     An implementation of the greedy core set query strategy.
     """
 
-    def __init__(self, model, input_shape, num_labels):
-        super().__init__(model, input_shape, num_labels)
+    def __init__(self, model, input_shape, num_labels, gpu):
+        super().__init__(model, input_shape, num_labels, gpu)
 
     def greedy_k_center(self, labeled, unlabeled, amount):
 
@@ -424,8 +525,9 @@ class CoreSetMIPSampling(QueryMethod):
     An implementation of the core set query strategy with the MIP formulation using gurobi as our optimization solver.
     """
 
-    def __init__(self, model, input_shape, num_labels):
-        super().__init__(model, input_shape, num_labels)
+    def __init__(self, model, input_shape, num_labels, gpu):
+        super().__init__(model, input_shape, num_labels, gpu)
+        self.subsample = False
 
     def greedy_k_center(self, labeled, unlabeled, amount):
 
@@ -447,6 +549,8 @@ class CoreSetMIPSampling(QueryMethod):
         farthest = np.argmax(min_dist)
         greedy_indices.append(farthest)
         for i in range(amount-1):
+            if i%1000==0:
+                print("At Point " + str(i))
             dist = distance_matrix(unlabeled[greedy_indices[-1], :].reshape((1,unlabeled.shape[1])), unlabeled)
             min_dist = np.vstack((min_dist, dist.reshape((1, min_dist.shape[1]))))
             min_dist = np.min(min_dist, axis=0)
@@ -456,8 +560,131 @@ class CoreSetMIPSampling(QueryMethod):
 
         return np.array(greedy_indices, dtype=int), np.max(min_dist)
 
+    def get_distance_matrix(self, X, Y):
 
-    def mip_model(self, data, subsample_num, budget, dist, delta, outlier_count, greedy_indices=None):
+        x_input = K.placeholder((X.shape))
+        y_input = K.placeholder(Y.shape)
+        dot = K.dot(x_input, K.transpose(y_input))
+        x_norm = K.reshape(K.sum(K.pow(x_input, 2), axis=1), (-1, 1))
+        y_norm = K.reshape(K.sum(K.pow(y_input, 2), axis=1), (1, -1))
+        dist_mat = x_norm + y_norm - 2.0*dot
+        sqrt_dist_mat = K.sqrt(K.clip(dist_mat, min_value=0, max_value=10000))
+        dist_func = K.function([x_input, y_input], [sqrt_dist_mat])
+
+        return dist_func([X, Y])[0]
+
+    def get_neighborhood_graph(self, representation, delta):
+
+        graph = {}
+        print(representation.shape)
+        for i in range(0, representation.shape[0], 1000):
+
+            if i+1000 > representation.shape[0]:
+                distances = self.get_distance_matrix(representation[i:], representation)
+                amount = representation.shape[0] - i
+            else:
+                distances = self.get_distance_matrix(representation[i:i+1000], representation)
+                amount = 1000
+
+            distances = np.reshape(distances, (amount, -1))
+            for j in range(i, i+amount):
+                graph[j] = [(idx, distances[j-i, idx]) for idx in np.reshape(np.where(distances[j-i, :] <= delta),(-1))]
+
+        print("Finished Building Graph!")
+        return graph
+
+    def get_graph_max(self, representation, delta):
+
+        print("Getting Graph Maximum...")
+
+        maximum = 0
+        for i in range(0, representation.shape[0], 1000):
+            print("At Point " + str(i))
+
+            if i+1000 > representation.shape[0]:
+                distances = self.get_distance_matrix(representation[i:], representation)
+            else:
+                distances = self.get_distance_matrix(representation[i:i+1000], representation)
+
+            distances = np.reshape(distances, (-1))
+            distances[distances > delta] = 0
+            maximum = max(maximum, np.max(distances))
+
+        return maximum
+
+    def get_graph_min(self, representation, delta):
+
+        print("Getting Graph Minimum...")
+
+        minimum = 10000
+        for i in range(0, representation.shape[0], 1000):
+            print("At Point " + str(i))
+
+            if i+1000 > representation.shape[0]:
+                distances = self.get_distance_matrix(representation[i:], representation)
+            else:
+                distances = self.get_distance_matrix(representation[i:i+1000], representation)
+
+            distances = np.reshape(distances, (-1))
+            distances[distances < delta] = 10000
+            minimum = min(minimum, np.min(distances))
+
+        return minimum
+
+    def mip_model(self, representation, labeled_idx, budget, delta, outlier_count, greedy_indices=None):
+
+        import gurobipy as gurobi
+
+        model = gurobi.Model("Core Set Selection")
+
+        # set up the variables:
+        points = {}
+        outliers = {}
+        for i in range(representation.shape[0]):
+            if i in labeled_idx:
+                points[i] = model.addVar(ub=1.0, lb=1.0, vtype="B", name="points_{}".format(i))
+            else:
+                points[i] = model.addVar(vtype="B", name="points_{}".format(i))
+        for i in range(representation.shape[0]):
+            outliers[i] = model.addVar(vtype="B", name="outliers_{}".format(i))
+            outliers[i].start = 0
+
+        # initialize the solution to be the greedy solution:
+        if greedy_indices is not None:
+            for i in greedy_indices:
+                points[i].start = 1.0
+
+        # set the outlier budget:
+        model.addConstr(sum(outliers[i] for i in outliers) <= outlier_count, "budget")
+
+        # build the graph and set the constraints:
+        model.addConstr(sum(points[i] for i in range(representation.shape[0])) == budget, "budget")
+        neighbors = {}
+        graph = {}
+        print("Updating Neighborhoods In MIP Model...")
+        for i in range(0, representation.shape[0], 1000):
+            print("At Point " + str(i))
+
+            if i+1000 > representation.shape[0]:
+                distances = self.get_distance_matrix(representation[i:], representation)
+                amount = representation.shape[0] - i
+            else:
+                distances = self.get_distance_matrix(representation[i:i+1000], representation)
+                amount = 1000
+
+            distances = np.reshape(distances, (amount, -1))
+            for j in range(i, i+amount):
+                graph[j] = [(idx, distances[j-i, idx]) for idx in np.reshape(np.where(distances[j-i, :] <= delta),(-1))]
+                neighbors[j] = [points[idx] for idx in np.reshape(np.where(distances[j-i, :] <= delta),(-1))]
+                neighbors[j].append(outliers[j])
+                model.addConstr(sum(neighbors[j]) >= 1, "coverage+outliers")
+
+        model.__data = points, outliers
+        model.Params.MIPFocus = 1
+
+        return model, graph
+
+    def mip_model_subsample(self, data, subsample_num, budget, dist, delta, outlier_count, greedy_indices=None):
 
         import gurobipy as gurobi
 
@@ -497,11 +724,70 @@ class CoreSetMIPSampling(QueryMethod):
         model.setObjective(sum(outliers[i] for i in outliers), gurobi.GRB.MINIMIZE)
 
         model.__data = points, outliers
+        model.Params.MIPFocus = 1
 
         return model
 
+    def query_regular(self, X_train, Y_train, labeled_idx, amount):
 
-    def query(self, X_train, Y_train, labeled_idx, amount):
+        import gurobipy as gurobi
+
+        unlabeled_idx = get_unlabeled_idx(X_train, labeled_idx)
+
+        # use the learned representation for the k-greedy-center algorithm:
+        representation_model = Model(inputs=self.model.input, outputs=self.model.get_layer('softmax').input)
+        representation = representation_model.predict(X_train, batch_size=256, verbose=0)
+        print("Calculating Greedy K-Center Solution...")
+        new_indices, max_delta = self.greedy_k_center(representation[labeled_idx], representation[unlabeled_idx], amount)
+        new_indices = unlabeled_idx[new_indices]
+        outlier_count = int(X_train.shape[0] / 10000)
+        # outlier_count = 250
+        submipnodes = 20000
+
+        # iteratively solve the MIP optimization problem:
+        eps = 0.001
+        upper_bound = max_delta
+        lower_bound = max_delta / 2.0
+        print("Building MIP Model...")
+        model, graph = self.mip_model(representation, labeled_idx, len(labeled_idx) + amount, upper_bound, outlier_count, greedy_indices=new_indices)
+        model.Params.SubMIPNodes = submipnodes
+        points, outliers = model.__data
+        model.optimize()
+        indices = [i for i in graph if points[i].X == 1]
+        current_delta = upper_bound
+        while upper_bound - lower_bound > eps:
+
+            print("upper bound is {ub}, lower bound is {lb}".format(ub=upper_bound, lb=lower_bound))
+            if model.getAttr(gurobi.GRB.Attr.Status) == gurobi.GRB.INFEASIBLE:
+                print("Optimization Failed - Infeasible!")
+
+                lower_bound = max(current_delta, self.get_graph_min(representation, current_delta))
+                current_delta = (upper_bound + lower_bound) / 2.0
+
+                del model
+                gc.collect()
+                model, graph = self.mip_model(representation, labeled_idx, len(labeled_idx) + amount, current_delta, outlier_count, greedy_indices=indices)
+                points, outliers = model.__data
+                model.Params.SubMIPNodes = submipnodes
+
+            else:
+                print("Optimization Succeeded!")
+                upper_bound = min(current_delta, self.get_graph_max(representation, current_delta))
+                current_delta = (upper_bound + lower_bound) / 2.0
+                indices = [i for i in graph if points[i].X == 1]
+
+                del model
+                gc.collect()
+                model, graph = self.mip_model(representation, labeled_idx, len(labeled_idx) + amount, current_delta, outlier_count, greedy_indices=indices)
+                points, outliers = model.__data
+                model.Params.SubMIPNodes = submipnodes
+
+            if upper_bound - lower_bound > eps:
+                model.optimize()
+
+        return np.array(indices)
+
+    def query_subsample(self, X_train, Y_train, labeled_idx, amount):
 
         import gurobipy as gurobi
 
@@ -524,7 +810,7 @@ class CoreSetMIPSampling(QueryMethod):
         eps = 0.000001
         upper_bound = max_delta
         lower_bound = max_delta / 2.0
-        model = self.mip_model(representation, subsample_num, len(labeled_idx) + amount, dist, upper_bound, outlier_count, greedy_indices=new_indices)
+        model = self.mip_model_subsample(representation, subsample_num, len(labeled_idx) + amount, dist, upper_bound, outlier_count, greedy_indices=new_indices)
         model.Params.SubMIPNodes = submipnodes
         points, outliers = model.__data
         model.optimize()
@@ -538,7 +824,7 @@ class CoreSetMIPSampling(QueryMethod):
                 print("Optimization Failed - Infeasible!")
                 lower_bound = max(current_delta, np.min(dist[dist>=current_delta]))
                 current_delta = (upper_bound + lower_bound) / 2.0
-                model = self.mip_model(representation, subsample_num, len(labeled_idx) + amount, dist, current_delta, outlier_count, greedy_indices=indices)
+                model = self.mip_model_subsample(representation, subsample_num, len(labeled_idx) + amount, dist, current_delta, outlier_count, greedy_indices=indices)
                 model.Params.SubMIPNodes = submipnodes
 
             else:
@@ -547,18 +833,27 @@ class CoreSetMIPSampling(QueryMethod):
                 current_delta = (upper_bound + lower_bound) / 2.0
                 points, outliers = model.__data
                 indices = [i for i in range(subsample.shape[0]) if points[i].X == 1]
-                model = self.mip_model(representation, subsample_num, len(labeled_idx) + amount, dist, current_delta, outlier_count, greedy_indices=indices)
+                model = self.mip_model_subsample(representation, subsample_num, len(labeled_idx) + amount, dist, current_delta, outlier_count, greedy_indices=indices)
                 model.Params.SubMIPNodes = submipnodes
 
         indices = np.array(indices)
         return np.hstack((labeled_idx, np.array(subsample_idx[indices[indices < subsample_num]])))
 
+    def query(self, X_train, Y_train, labeled_idx, amount):
+
+        if self.subsample:
+            return self.query_subsample(X_train, Y_train, labeled_idx, amount)
+        else:
+            return self.query_regular(X_train, Y_train, labeled_idx, amount)
+
 
 class EGLSampling(QueryMethod):
+    """
+    An implementation of the EGL query strategy.
+    """
 
-    def __init__(self, model, input_shape, num_labels):
-        super().__init__(model, input_shape, num_labels)
-
+    def __init__(self, model, input_shape, num_labels, gpu):
+        super().__init__(model, input_shape, num_labels, gpu)
 
     def compute_egls(self, unlabeled, n_classes):
 
@@ -595,7 +890,6 @@ class EGLSampling(QueryMethod):
 
         return egls
 
-
     def query(self, X_train, Y_train, labeled_idx, amount):
 
         unlabeled_idx = get_unlabeled_idx(X_train, labeled_idx)
@@ -613,8 +907,8 @@ class CombinedSampling(QueryMethod):
     from one strategy and the other half from the other strategy.
     """
 
-    def __init__(self, model, input_shape, num_labels, method1, method2):
-        super().__init__(model, input_shape, num_labels)
+    def __init__(self, model, input_shape, num_labels, method1, method2, gpu):
+        super().__init__(model, input_shape, num_labels, gpu)
         self.method1 = method1(model, input_shape, num_labels)
         self.method2 = method2(model, input_shape, num_labels)
 

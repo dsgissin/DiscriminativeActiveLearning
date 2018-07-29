@@ -13,7 +13,7 @@ from keras import optimizers
 from keras import regularizers
 from keras import backend as K
 from keras.models import load_model
-from keras.utils import to_categorical
+from keras.utils import to_categorical, multi_gpu_model
 
 class DiscriminativeEarlyStopping(Callback):
     """
@@ -45,7 +45,7 @@ class DelayedModelCheckpoint(Callback):
     iterations to save time.
     """
 
-    def __init__(self, filepath, monitor='val_acc', delay=50, verbose=0):
+    def __init__(self, filepath, monitor='val_acc', delay=50, verbose=0, weights=False):
 
         super(DelayedModelCheckpoint, self).__init__()
         self.monitor = monitor
@@ -53,6 +53,7 @@ class DelayedModelCheckpoint(Callback):
         self.filepath = filepath
         self.delay = delay
         self.best = -np.Inf
+        self.weights = weights
 
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
@@ -65,7 +66,26 @@ class DelayedModelCheckpoint(Callback):
                       % (epoch, self.monitor, self.best,
                          current, self.filepath))
             self.best = current
-            self.model.save(self.filepath, overwrite=True)
+            if self.weights:
+                self.model.save_weights(self.filepath, overwrite=True)
+            else:
+                self.model.save(self.filepath, overwrite=True)
+
+
+class ModelMGPU(Model):
+    def __init__(self, ser_model, gpus):
+        pmodel = multi_gpu_model(ser_model, gpus, cpu_relocation=False, cpu_merge=False)
+        self.__dict__.update(pmodel.__dict__)
+        self._smodel = ser_model
+
+    def __getattribute__(self, attrname):
+        '''Override load and save methods to be used from the serial-model. The
+        serial-model holds references to the weights in the multi-gpu model.
+        '''
+        if 'load' in attrname or 'save' in attrname:
+            return getattr(self._smodel, attrname)
+
+        return super(ModelMGPU, self).__getattribute__(attrname)
 
 
 def get_discriminative_model(input_shape):
@@ -173,8 +193,7 @@ def get_VGG_model(input_shape, labels=10):
     model.add(Activation('relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
-    model.add(Dense(labels, name='softmax'))
-    model.add(Activation('softmax', name='softmax_activation'))
+    model.add(Dense(labels, activation='softmax', name='softmax'))
 
     return model
 
@@ -202,7 +221,7 @@ def get_autoencoder_model(input_shape, labels=10):
     return autoencoder
 
 
-def train_discriminative_model(labeled, unlabeled, input_shape):
+def train_discriminative_model(labeled, unlabeled, input_shape, gpu=1):
     """
     A function that trains and returns a discriminative model on the labeled and unlabaled data.
     """
@@ -245,7 +264,7 @@ def train_discriminative_model(labeled, unlabeled, input_shape):
     return model
 
 
-def train_mnist_model(X_train, Y_train, X_validation, Y_validation, checkpoint_path):
+def train_mnist_model(X_train, Y_train, X_validation, Y_validation, checkpoint_path, gpu=1):
     """
     A function that trains and returns a LeNet model on the labeled MNIST data.
     """
@@ -257,25 +276,41 @@ def train_mnist_model(X_train, Y_train, X_validation, Y_validation, checkpoint_p
 
     model = get_LeNet_model(input_shape=input_shape, labels=10)
     optimizer = optimizers.Adam()
-    model.compile(loss='categorical_crossentropy', optimizer=optimizer,
-                  metrics=['accuracy'])
-    callbacks = [DelayedModelCheckpoint(filepath=checkpoint_path, verbose=1)]
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+    callbacks = [DelayedModelCheckpoint(filepath=checkpoint_path, verbose=1, weights=True)]
 
-    model.fit(X_train, Y_train,
-              epochs=150,
-              batch_size=32,
-              shuffle=True,
-              validation_data=(X_validation, Y_validation),
-              callbacks=callbacks,
-              verbose=2)
+    if gpu > 1:
+        gpu_model = ModelMGPU(model, gpus = gpu)
+        gpu_model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+        gpu_model.fit(X_train, Y_train,
+                      epochs=150,
+                      batch_size=32,
+                      shuffle=True,
+                      validation_data=(X_validation, Y_validation),
+                      callbacks=callbacks,
+                      verbose=2)
 
-    # reload the best saved model from the training:
-    del model
-    model = load_model(checkpoint_path)
-    return model
+        del model
+        del gpu_model
+
+        model = get_LeNet_model(input_shape=input_shape, labels=10)
+        model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+        model.load_weights(checkpoint_path)
+        return model
+
+    else:
+        model.fit(X_train, Y_train,
+                  epochs=150,
+                  batch_size=32,
+                  shuffle=True,
+                  validation_data=(X_validation, Y_validation),
+                  callbacks=callbacks,
+                  verbose=2)
+        model.load_weights(checkpoint_path)
+        return model
 
 
-def train_cifar10_model(X_train, Y_train, X_validation, Y_validation, checkpoint_path):
+def train_cifar10_model(X_train, Y_train, X_validation, Y_validation, checkpoint_path, gpu=1):
     """
     A function that trains and returns a VGG model on the labeled CIFAR-10 data.
     """
@@ -288,23 +323,42 @@ def train_cifar10_model(X_train, Y_train, X_validation, Y_validation, checkpoint
     model = get_VGG_model(input_shape=input_shape, labels=10)
     optimizer = optimizers.Adam()
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
-    callbacks = [DelayedModelCheckpoint(filepath=checkpoint_path, verbose=1)]
+    callbacks = [DelayedModelCheckpoint(filepath=checkpoint_path, verbose=1, weights=True)]
 
-    model.fit(X_train, Y_train,
-              epochs=400,
-              batch_size=32,
-              shuffle=True,
-              validation_data=(X_validation, Y_validation),
-              callbacks=callbacks,
-              verbose=2)
+    if gpu > 1:
+        gpu_model = ModelMGPU(model, gpus = gpu)
+        gpu_model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+        gpu_model.fit(X_train, Y_train,
+                      epochs=400,
+                      batch_size=32,
+                      shuffle=True,
+                      validation_data=(X_validation, Y_validation),
+                      callbacks=callbacks,
+                      verbose=2)
 
-    # reload the best saved model from the training:
-    del model
-    model = load_model(checkpoint_path)
-    return model
+        del gpu_model
+        del model
+
+        model = get_VGG_model(input_shape=input_shape, labels=10)
+        model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+        model.load_weights(checkpoint_path)
+
+        return model
+
+    else:
+        model.fit(X_train, Y_train,
+                      epochs=400,
+                      batch_size=32,
+                      shuffle=True,
+                      validation_data=(X_validation, Y_validation),
+                      callbacks=callbacks,
+                      verbose=2)
+
+        model.load_weights(checkpoint_path)
+        return model
 
 
-def train_cifar100_model(X_train, Y_train, X_validation, Y_validation, checkpoint_path):
+def train_cifar100_model(X_train, Y_train, X_validation, Y_validation, checkpoint_path, gpu=1):
     """
     A function that trains and returns a VGG model on the labeled CIFAR-100 data.
     """
@@ -315,22 +369,40 @@ def train_cifar100_model(X_train, Y_train, X_validation, Y_validation, checkpoin
         input_shape = (3, 32, 32)
 
     model = get_VGG_model(input_shape=input_shape, labels=100)
-    optimizer = optimizers.Adam()
+    optimizer = optimizers.Adam(lr=0.0001)
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
-    callbacks = [DelayedModelCheckpoint(filepath=checkpoint_path, verbose=1)]
+    callbacks = [DelayedModelCheckpoint(filepath=checkpoint_path, verbose=1, weights=True)]
 
-    model.fit(X_train, Y_train,
-              epochs=800,
-              batch_size=32,
-              shuffle=True,
-              validation_data=(X_validation, Y_validation),
-              callbacks=callbacks,
-              verbose=2)
+    if gpu > 1:
+        gpu_model = ModelMGPU(model, gpus = gpu)
+        gpu_model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+        gpu_model.fit(X_train, Y_train,
+                      epochs=1000,
+                      batch_size=128,
+                      shuffle=True,
+                      validation_data=(X_validation, Y_validation),
+                      callbacks=callbacks,
+                      verbose=2)
 
-    # reload the best saved model from the training:
-    del model
-    model = load_model(checkpoint_path)
-    return model
+        del gpu_model
+        del model
 
+        model = get_VGG_model(input_shape=input_shape, labels=100)
+        model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+        model.load_weights(checkpoint_path)
+
+        return model
+
+    else:
+        model.fit(X_train, Y_train,
+                      epochs=1000,
+                      batch_size=128,
+                      shuffle=True,
+                      validation_data=(X_validation, Y_validation),
+                      callbacks=callbacks,
+                      verbose=2)
+
+        model.load_weights(checkpoint_path)
+        return model
 
 
