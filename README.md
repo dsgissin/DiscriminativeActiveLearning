@@ -20,9 +20,7 @@ In order to run our code, you'll need these main packages:
 
 The code is run using the main.py file in the following way:
 
-'''
-python3 main.py <experiment_index> <dataset> <batch_size> <initial_size> <iterations> <method> <experiment_folder> -method2 <method2> -idx "/cs/labs/shais/dsgissin/ActiveLearning/experiment_indices/" -gpu <gpus>
-'''
+    python3 main.py <experiment_index> <dataset> <batch_size> <initial_size> <iterations> <method> <experiment_folder> -method2 <method2> -idx "/cs/labs/shais/dsgissin/ActiveLearning/experiment_indices/" -gpu <gpus>
 
 - experiment_index: an integer detailing the number of experiment (since usually many are run in parallel and combined later).
 - dataset: a string detailing the dataset for this experiment (one of "mnist", "cifar10" or "cifar100").
