@@ -170,13 +170,13 @@ No correlation at all.
 ## Summary
 In this post we empirically compared the different methods that we detailed in the last post, using the MNIST and CIFAR datasets. We saw the effect of the batch size on the different methods and reviewed two additional interesting ways to compare active learning methods - the label entropy and the ranking comparison.
 
-We also saw that the methods can be sensitive to the actual objective we are optimizing, and the network architecture. This is especially true for methods like EGL, which use the model's gradient as part of their decision rule (and it might also be true of the adversarial approach for this same reason).
+We also saw that the methods can be sensitive to the actual objective we are optimizing, along with the network architecture. This is especially true for methods like EGL, which use the model's gradient as part of their decision rule (and it might also be true of the adversarial approach for this same reason).
 
-Overall, while the different methods perform differently in different situations, it doesn't seem like any of them really outshines the good old uncertainty sampling. This comes in contrast to what is shown in the different papers, and we do not have a good explanation for this.
+Overall, while the different methods perform differently in different situations, **it doesn't seem like any of them really beat the good old uncertainty sampling**. This comes in contrast to what is shown in the different papers, and we do not have a good explanation for this.
 
-In the [next post][next post], we will review the work we did on developing a new active learning method - **"Discriminative Active Learning"**. The method didn't pan out and we couldn't get it to work as well as we'd hoped, but the thought process could be of interest. If you would rather skip ahead, [the post after that][last post] concludes this review of active learning.
+TODO: don't we have a good explanation for it...?
 
-TODO: fix the last paragraph according to what we decide about DAL...
+In the [next post][next post], we will review the work we did on developing a new active learning method - **"Discriminative Active Learning"** (DAL). The method gives results which are comparable to the other methods detailed here, but we weren't able to clearly beat any of them and so the work didn't result in a paper. Still, the method and thought process could be of interest. If you would rather skip ahead, [the post after that][last post] concludes this review of active learning.
 
 [previous post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Batch-AL.html
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning

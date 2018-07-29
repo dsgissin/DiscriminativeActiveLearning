@@ -3,7 +3,7 @@ layout: post
 title: Discriminative Active Learning
 comments: true
 ---
-If you made it this far, you've been [introduced][first post] to the active learning framework, saw how to [extend][second post] the framework to more realistic settings and have seen ways of [comparing active learning methods][third post]. We'll now detail the thought process and experiments we ran when trying to come up with a new method - discriminative active learning (DAL).
+If you made it this far, you've been [introduced][first post] to the active learning framework, saw how to [extend][second post] the framework to more realistic settings and have seen ways of [comparing active learning methods][third post]. We'll now detail the thought process and experiments we ran when trying to come up with a new method - Discriminative Active Learning (DAL).
 
 ## Intuition
 We started with a simple idea - when we are creating a dataset to be labeled that we want to represent the original distribution well, we shouldn't have too many redundant instances. **If we want to learn from new examples, we want them to be different from what we already have**.
@@ -29,7 +29,7 @@ A second representation that decouples the active learning process from the labe
 The final representation, like in the core set approach, is the representation learned by a model that is trained on the labeled data. This means our representation will contain more semantic features but will mean we are bound to the labeling process if we want to use a representation that improves throughout the active learning process.
 
 ## Why This May Be Promising
-This idea takes a very different approach to other active learning methods, in that **it is completely agnostic about the original problem we are trying to solve**, and only focuses on making the labeled set as diverse as possible. In this sense it is similar to the core set approach. This gives it the nice property that there is no need to adapt it to different machine learning scenarios like regression, segmentation and so on.
+This idea takes a very different approach to other active learning methods, in that **it is completely agnostic about the original problem we are trying to solve**, and only focuses on making the labeled set as diverse as possible. In this sense it is similar to the core set approach. This gives it the nice property that there is no need to adapt it to different machine learning scenarios like regression, segmentation, structured learning and so on.
 
 Another bonus here, is that **binary classification is relatively easy**. It isn't hard to overfit on two classes (even under random labels) with a modestly sized neural network, and it can be done rather quickly. The MIP formulation of the core set approach for instance is relatively slow and doesn't scale as well.
 
@@ -103,7 +103,9 @@ Next, we move to comparing our method to all the other ones on MNIST and CIFAR-1
 
 {% include image.html path="DAL/cifar10_all.png" %}
 
-In the MNIST results we see more evidence that our method behaves in a similar way to the core set approach, since their results are more or less identical. This means that on the MNIST dataset there is a clear distinction between the results of the uncertainty-based methods (including the adversarial approach) and the covering based methods (core set and discriminative). On the CIFAR-10 front we see that our method is on par with the rest of the methods, having negligible differences to the other ones.
+{% include image.html path="DAL/cifar10_10000.png" %}
+
+In the MNIST results we see more evidence that our method behaves in a similar way to the core set approach, since their results are more or less identical. This means that on the MNIST dataset there is a clear distinction between the results of the uncertainty-based methods (including the adversarial approach) and the covering based methods (core set and discriminative). On the CIFAR-10 front, we see that our method is on par with the rest of the methods, having negligible differences to the others...
 
 Finally, let's look at how our method looks in the label entropy metric against the other methods:
 
@@ -112,10 +114,6 @@ Finally, let's look at how our method looks in the label entropy metric against 
 {% include image.html path="DAL/cifar10_entropy.png" %}
 
 Seems relatively consistent with what we would expect... Our method has results which are a bit too high for its actual accuracy scores, but that's not a problem since this measure is only a heuristic.
-
-TODO: I didn't use the robust approach of the core set for CIFAR-10...
-
-TODO: we aren't really negligable on CIFAR, are we? Should we try running the stochastic method for outlier robusteness?
 
 ### Implementation Details
 The binary classification task we are trying to solve is very unbalanced since most of the time we'll have an order of magnitude more unlabeled examples than labeled examples. This means we need to be careful in the way we train our neural network to make sure we don't get a classifier that just thinks everything is "unlabeled".
@@ -144,7 +142,7 @@ A possible explanation here would be that while the two dimensional toy example 
 ## Summary
 In this post we introduced **Discriminative Active Learning (DAL)**, a new active learning algorithm for the batch setting. We gave some intuition as to why the method should work, and presented the thought process and experiments we ran until we got our final algorithm.
 
-We compared DAL to the methods we covered in the [previous post][third post] and saw that it performs similarly to the core set approach, while being easier to implement and more scalable. We also saw that our method shares the task-agnostic nature of the core set approach, making it very easy to adapt to machine learning tasks which aren't classification.
+We compared DAL to the methods we covered in the [previous post][third post] and saw that it performs similarly to the core set approach, while being easier to implement and more scalable. We also saw that our method shares the task-agnostic nature of the core set approach, making it very easy to adapt to machine learning tasks which aren't classification. While our method seems to do a great job, it isn't clearly better than any of the current baselines and so we can't recommend using it without further experiments.
 
 In the [next post][conclusion] we will conclude this blog series by quickly going over what we learned and highlighting what we think are the most important take home messages.
 
