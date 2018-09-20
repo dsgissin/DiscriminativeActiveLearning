@@ -52,24 +52,42 @@ class DelayedModelCheckpoint(Callback):
         self.verbose = verbose
         self.filepath = filepath
         self.delay = delay
-        self.best = -np.Inf
+        if self.monitor == 'val_acc':
+            self.best = -np.Inf
+        else:
+            self.best = np.Inf
         self.weights = weights
 
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
 
-        current = logs.get(self.monitor)
-        if current >= self.best and epoch > self.delay:
-            if self.verbose > 0:
-                print('\nEpoch %05d: %s improved from %0.5f to %0.5f,'
-                      ' saving model to %s'
-                      % (epoch, self.monitor, self.best,
-                         current, self.filepath))
-            self.best = current
-            if self.weights:
-                self.model.save_weights(self.filepath, overwrite=True)
-            else:
-                self.model.save(self.filepath, overwrite=True)
+        if self.monitor == 'val_acc':
+            current = logs.get(self.monitor)
+            if current >= self.best and epoch > self.delay:
+                if self.verbose > 0:
+                    print('\nEpoch %05d: %s improved from %0.5f to %0.5f,'
+                          ' saving model to %s'
+                          % (epoch, self.monitor, self.best,
+                             current, self.filepath))
+                self.best = current
+                if self.weights:
+                    self.model.save_weights(self.filepath, overwrite=True)
+                else:
+                    self.model.save(self.filepath, overwrite=True)
+        else:
+            current = logs.get(self.monitor)
+            if current <= self.best and epoch > self.delay:
+                if self.verbose > 0:
+                    print('\nEpoch %05d: %s improved from %0.5f to %0.5f,'
+                          ' saving model to %s'
+                          % (epoch, self.monitor, self.best,
+                             current, self.filepath))
+                self.best = current
+                if self.weights:
+                    self.model.save_weights(self.filepath, overwrite=True)
+                else:
+                    self.model.save(self.filepath, overwrite=True)
+
 
 
 class ModelMGPU(Model):
@@ -93,12 +111,22 @@ def get_discriminative_model(input_shape):
     The MLP model for discriminative active learning, without any regularization techniques.
     """
 
-    model = Sequential()
-    model.add(Flatten(input_shape=input_shape))
-    model.add(Dense(256, activation='relu'))
-    model.add(Dense(256, activation='relu'))
-    model.add(Dense(256, activation='relu'))
-    model.add(Dense(2, activation='softmax', name='softmax'))
+    if np.sum(input_shape) < 30:
+        width = 20
+        model = Sequential()
+        model.add(Flatten(input_shape=input_shape))
+        model.add(Dense(width, activation='relu'))
+        model.add(Dense(width, activation='relu'))
+        model.add(Dense(width, activation='relu'))
+        model.add(Dense(2, activation='softmax', name='softmax'))
+    else:
+        width=256
+        model = Sequential()
+        model.add(Flatten(input_shape=input_shape))
+        model.add(Dense(width, activation='relu'))
+        model.add(Dense(width, activation='relu'))
+        model.add(Dense(width, activation='relu'))
+        model.add(Dense(2, activation='softmax', name='softmax'))
 
     return model
 
@@ -189,7 +217,7 @@ def get_VGG_model(input_shape, labels=10):
     model.add(Dropout(0.5))
 
     model.add(Flatten())
-    model.add(Dense(512,kernel_regularizer=regularizers.l2(weight_decay), name='embedding'))
+    model.add(Dense(512, kernel_regularizer=regularizers.l2(weight_decay), name='embedding'))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
@@ -200,7 +228,7 @@ def get_VGG_model(input_shape, labels=10):
 
 def get_autoencoder_model(input_shape, labels=10):
     """
-    An autoencoder for MNIST to be used in the discriminative active learning implementation.
+    An autoencoder for MNIST to be used in the DAL implementation.
     """
 
     image = Input(shape=input_shape)
@@ -236,25 +264,35 @@ def train_discriminative_model(labeled, unlabeled, input_shape, gpu=1):
     # build the model:
     model = get_discriminative_model(input_shape)
 
-    # train the model:  TODO - fix the ugly if statements and put this in the arguments of the script
+    # train the model:
+    batch_size = 1024
     if np.max(input_shape) == 28:
         optimizer = optimizers.Adam(lr=0.0003)
         epochs = 200
     elif np.max(input_shape) == 128:
-        optimizer = optimizers.Adam(lr=0.0003)
-        epochs = 200
+        # optimizer = optimizers.Adam(lr=0.0003)
+        # epochs = 200
+        batch_size = 128
+        optimizer = optimizers.Adam(lr=0.0001)
+        epochs = 1000 #TODO: was 200
     elif np.max(input_shape) == 512:
+        optimizer = optimizers.Adam(lr=0.0002)
+        # optimizer = optimizers.RMSprop()
+        epochs = 500
+    elif np.max(input_shape) == 32:
         optimizer = optimizers.Adam(lr=0.0003)
         epochs = 500
     else:
-        optimizer = optimizers.Adam(lr=0.0003)
-        epochs = 500
+        optimizer = optimizers.Adam()
+        # optimizer = optimizers.RMSprop()
+        epochs = 1000
+        batch_size = 32
 
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
     callbacks = [DiscriminativeEarlyStopping()]
     model.fit(X_train, Y_train,
               epochs=epochs,
-              batch_size=1024,
+              batch_size=batch_size,
               shuffle=True,
               callbacks=callbacks,
               class_weight={0 : float(X_train.shape[0]) / Y_train[Y_train==0].shape[0],

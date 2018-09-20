@@ -53,7 +53,7 @@ class QueryMethod:
 
 class RandomSampling(QueryMethod):
     """
-    A basic random sampling query strategy baseline.
+    A random sampling query strategy baseline.
     """
 
     def __init__(self, model, input_shape, num_labels, gpu):
@@ -110,7 +110,7 @@ class BayesianUncertaintySampling(QueryMethod):
     def __init__(self, model, input_shape, num_labels, gpu):
         super().__init__(model, input_shape, num_labels, gpu)
 
-        self.T = 100
+        self.T = 20
 
     def dropout_predict(self, data):
 
@@ -130,20 +130,22 @@ class BayesianUncertaintySampling(QueryMethod):
         unlabeled_idx = get_unlabeled_idx(X_train, labeled_idx)
 
         predictions = np.zeros((unlabeled_idx.shape[0], self.num_labels))
+        uncertainties = np.zeros((unlabeled_idx.shape[0], self.num_labels))
         i = 0
-        while i < unlabeled_idx.shape[0]: # split into iterations of 1000 due to memory constraints
+        split = 128  # split into iterations of 128 due to memory constraints
+        while i < unlabeled_idx.shape[0]:
 
-            if i+1000 > unlabeled_idx.shape[0]:
-                preds, _ = self.dropout_predict(X_train[unlabeled_idx[i:], :])
+            if i+split > unlabeled_idx.shape[0]:
+                preds, unc = self.dropout_predict(X_train[unlabeled_idx[i:], :])
                 predictions[i:] = preds
+                uncertainties[i:] = unc
             else:
-                preds, _ = self.dropout_predict(X_train[unlabeled_idx[i:i+1000], :])
-                predictions[i:i+1000] = preds
-
-            i += 1000
+                preds, unc = self.dropout_predict(X_train[unlabeled_idx[i:i+split], :])
+                predictions[i:i+split] = preds
+                uncertainties[i:i+split] = unc
+            i += split
 
         unlabeled_predictions = np.amax(predictions, axis=1)
-
         selected_indices = np.argpartition(unlabeled_predictions, amount)[:amount]
         return np.hstack((labeled_idx, unlabeled_idx[selected_indices]))
 
@@ -189,7 +191,6 @@ class BayesianUncertaintyEntropySampling(QueryMethod):
             i += 1000
 
         unlabeled_predictions = np.sum(predictions * np.log(predictions + 1e-10), axis=1)
-
         selected_indices = np.argpartition(unlabeled_predictions, amount)[:amount]
         return np.hstack((labeled_idx, unlabeled_idx[selected_indices]))
 
@@ -288,7 +289,7 @@ class DiscriminativeRepresentationSampling(QueryMethod):
     def __init__(self, model, input_shape, num_labels, gpu):
         super().__init__(model, input_shape, num_labels, gpu)
 
-        self.sub_batches = 25
+        self.sub_batches = 20
 
 
     def query(self, X_train, Y_train, labeled_idx, amount):
@@ -299,7 +300,7 @@ class DiscriminativeRepresentationSampling(QueryMethod):
 
         embedding_model = Model(inputs=self.model.input,
                                 outputs=self.model.get_layer('softmax').input)
-        representation = embedding_model.predict(X_train, batch_size=256).reshape((X_train.shape[0], -1, 1))
+        representation = embedding_model.predict(X_train, batch_size=128).reshape((X_train.shape[0], -1, 1))
 
         # iteratively sub-sample using the discriminative sampling routine:
         labeled_so_far = 0
@@ -320,6 +321,7 @@ class DiscriminativeRepresentationSampling(QueryMethod):
             del model
             gc.collect()
         del embedding_model
+        gc.collect()
 
         return labeled_idx
 
@@ -423,53 +425,6 @@ class DiscriminativeStochasticSampling(QueryMethod):
         del embedding_model
 
         return labeled_idx
-
-
-class MistakeSampling(QueryMethod):
-    """
-    An implementation of the mistake-based query strategy - this idea didn't pan out and wasn't mentioned in the blog... :(
-    """
-
-    def __init__(self, model, input_shape, num_labels, gpu):
-        super().__init__(model, input_shape, num_labels, gpu)
-
-    def get_distances(self, unlabeled_representation, mistakes_representation):
-
-        distances = distance_matrix(np.squeeze(unlabeled_representation), np.squeeze(mistakes_representation))
-        return distances
-
-    def query(self, X_train, Y_train, labeled_idx, amount):
-
-        # subsample from the unlabeled set:
-        unlabeled_idx = get_unlabeled_idx(X_train, labeled_idx)
-
-        embedding_model = Model(inputs=self.model.input,
-                                outputs=self.model.get_layer('softmax').input)
-        representation = embedding_model.predict(X_train, batch_size=256).reshape((X_train.shape[0], -1, 1))
-
-        # find the mistakes:
-        softmax_scores = self.model.predict(X_train[labeled_idx])
-        predictions = np.argmax(softmax_scores, axis=1)
-        labels = np.argmax(Y_train[labeled_idx], axis=1)
-        mistakes = labeled_idx[predictions != labels]
-        print("The Amount of Mistakes is " + str(len(mistakes)))
-        if len(mistakes) < int(amount/10.):
-            top_scores = np.amax(softmax_scores, axis=1)
-            close_calls = np.argpartition(top_scores, int(amount/10.)-len(mistakes))[:int(amount/10.)-len(mistakes)]
-            if len(mistakes) == 0:
-                mistakes = close_calls
-            else:
-                mistakes = np.hstack((mistakes, close_calls))
-
-        # get the distances to the mistakes:
-        distances = self.get_distances(representation[unlabeled_idx], representation[np.squeeze(mistakes)])
-        distances = np.amin(distances, axis=1)
-
-        # choose the unlabeled examples closest to the labeled mistakes:
-        closest = np.argpartition(distances, amount)[:amount]
-
-        del embedding_model
-        return np.hstack((labeled_idx, unlabeled_idx[closest]))
 
 
 class CoreSetSampling(QueryMethod):
@@ -681,6 +636,7 @@ class CoreSetMIPSampling(QueryMethod):
 
         model.__data = points, outliers
         model.Params.MIPFocus = 1
+        model.params.TIME_LIMIT = 180
 
         return model, graph
 
@@ -736,7 +692,7 @@ class CoreSetMIPSampling(QueryMethod):
 
         # use the learned representation for the k-greedy-center algorithm:
         representation_model = Model(inputs=self.model.input, outputs=self.model.get_layer('softmax').input)
-        representation = representation_model.predict(X_train, batch_size=256, verbose=0)
+        representation = representation_model.predict(X_train, batch_size=128, verbose=0)
         print("Calculating Greedy K-Center Solution...")
         new_indices, max_delta = self.greedy_k_center(representation[labeled_idx], representation[unlabeled_idx], amount)
         new_indices = unlabeled_idx[new_indices]
@@ -745,7 +701,7 @@ class CoreSetMIPSampling(QueryMethod):
         submipnodes = 20000
 
         # iteratively solve the MIP optimization problem:
-        eps = 0.001
+        eps = 0.01
         upper_bound = max_delta
         lower_bound = max_delta / 2.0
         print("Building MIP Model...")
@@ -758,7 +714,7 @@ class CoreSetMIPSampling(QueryMethod):
         while upper_bound - lower_bound > eps:
 
             print("upper bound is {ub}, lower bound is {lb}".format(ub=upper_bound, lb=lower_bound))
-            if model.getAttr(gurobi.GRB.Attr.Status) == gurobi.GRB.INFEASIBLE:
+            if model.getAttr(gurobi.GRB.Attr.Status) in [gurobi.GRB.INFEASIBLE, gurobi.GRB.TIME_LIMIT]:
                 print("Optimization Failed - Infeasible!")
 
                 lower_bound = max(current_delta, self.get_graph_min(representation, current_delta))
@@ -794,50 +750,13 @@ class CoreSetMIPSampling(QueryMethod):
         unlabeled_idx = get_unlabeled_idx(X_train, labeled_idx)
 
         submipnodes = 20000
-        subsample_num = 3000
+        subsample_num = 30000
         subsample_idx = np.random.choice(unlabeled_idx, subsample_num, replace=False)
-        subsample = np.vstack((X_train[subsample_idx], X_train[labeled_idx]))
+        subsample = np.vstack((X_train[labeled_idx], X_train[subsample_idx]))
+        new_labeled_idx = np.arange(len(labeled_idx))
+        new_indices = self.query_regular(subsample, Y_train, new_labeled_idx, amount)
+        return np.array(subsample_idx[new_indices - len(labeled_idx)])
 
-        # use the learned representation for the k-greedy-center algorithm:
-        representation_model = Model(inputs=self.model.input, outputs=self.model.get_layer('softmax').input)
-        representation = representation_model.predict(subsample, batch_size=256, verbose=0)
-        new_indices, max_delta = self.greedy_k_center(representation[subsample_num:, :], representation[:subsample_num, :], amount)
-        dist = distance_matrix(representation, representation)
-        # outlier_count = int(representation.shape[0] / 100)
-        outlier_count = 250
-
-        # iteratively solve the MIP optimization problem:
-        eps = 0.000001
-        upper_bound = max_delta
-        lower_bound = max_delta / 2.0
-        model = self.mip_model_subsample(representation, subsample_num, len(labeled_idx) + amount, dist, upper_bound, outlier_count, greedy_indices=new_indices)
-        model.Params.SubMIPNodes = submipnodes
-        points, outliers = model.__data
-        model.optimize()
-        indices = [i for i in range(subsample.shape[0]) if points[i].X == 1]
-        while upper_bound - lower_bound > eps:
-            current_delta = (upper_bound + lower_bound) / 2.0
-
-            print("upper bound is {ub}, lower bound is {lb}".format(ub=upper_bound, lb=lower_bound))
-            model.optimize()
-            if model.getAttr(gurobi.GRB.Attr.Status) == gurobi.GRB.INFEASIBLE:
-                print("Optimization Failed - Infeasible!")
-                lower_bound = max(current_delta, np.min(dist[dist>=current_delta]))
-                current_delta = (upper_bound + lower_bound) / 2.0
-                model = self.mip_model_subsample(representation, subsample_num, len(labeled_idx) + amount, dist, current_delta, outlier_count, greedy_indices=indices)
-                model.Params.SubMIPNodes = submipnodes
-
-            else:
-                print("Optimization Succeeded!")
-                upper_bound = min(current_delta, np.max(dist[dist<=current_delta]))
-                current_delta = (upper_bound + lower_bound) / 2.0
-                points, outliers = model.__data
-                indices = [i for i in range(subsample.shape[0]) if points[i].X == 1]
-                model = self.mip_model_subsample(representation, subsample_num, len(labeled_idx) + amount, dist, current_delta, outlier_count, greedy_indices=indices)
-                model.Params.SubMIPNodes = submipnodes
-
-        indices = np.array(indices)
-        return np.hstack((labeled_idx, np.array(subsample_idx[indices[indices < subsample_num]])))
 
     def query(self, X_train, Y_train, labeled_idx, amount):
 
@@ -909,8 +828,8 @@ class CombinedSampling(QueryMethod):
 
     def __init__(self, model, input_shape, num_labels, method1, method2, gpu):
         super().__init__(model, input_shape, num_labels, gpu)
-        self.method1 = method1(model, input_shape, num_labels)
-        self.method2 = method2(model, input_shape, num_labels)
+        self.method1 = method1(model, input_shape, num_labels, gpu)
+        self.method2 = method2(model, input_shape, num_labels, gpu)
 
     def query(self, X_train, Y_train, labeled_idx, amount):
         labeled_idx = self.method1.query(X_train, Y_train, labeled_idx, int(amount/2))

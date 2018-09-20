@@ -8,6 +8,7 @@ import os
 import sys
 import argparse
 from keras.utils import to_categorical
+from sklearn.datasets import load_boston, load_diabetes
 
 from models import *
 from query_methods import *
@@ -20,14 +21,14 @@ def parse_input():
     p.add_argument('initial_size', type=int, help="initial sample size for active learning")
     p.add_argument('iterations', type=int, help="number of active learning batches to sample")
     p.add_argument('method', type=str,
-                   choices={'Random','CoreSet','CoreSetMIP','MistakeSampling','Discriminative','DiscriminativeLearned','DiscriminativeAE','DiscriminativeStochastic','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial'},
-                   help="sampling method ('Random','CoreSet','CoreSetMIP','MistakeSampling','Discriminative','DiscriminativeLearned','DiscriminativeAE','DiscriminativeStochastic','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial')")
+                   choices={'Random','CoreSet','CoreSetMIP','Discriminative','DiscriminativeLearned','DiscriminativeAE','DiscriminativeStochastic','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial'},
+                   help="sampling method ('Random','CoreSet','CoreSetMIP','Discriminative','DiscriminativeLearned','DiscriminativeAE','DiscriminativeStochastic','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial')")
     p.add_argument('experiment_folder', type=str,
                    help="folder where the experiment results will be saved")
     p.add_argument('--method2', '-method2', type=str,
-                   choices={None,'Random','CoreSet','CoreSetMIP','MistakeSampling','Discriminative','DiscriminativeLearned','DiscriminativeAE','DiscriminativeStochastic','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial'},
+                   choices={None,'Random','CoreSet','CoreSetMIP','Discriminative','DiscriminativeLearned','DiscriminativeAE','DiscriminativeStochastic','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial'},
                    default=None,
-                   help="second sampling method ('Random','CoreSet','CoreSetMIP','MistakeSampling','Discriminative','DiscriminativeLearned','DiscriminativeAE','DiscriminativeStochastic','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial')")
+                   help="second sampling method ('Random','CoreSet','CoreSetMIP','Discriminative','DiscriminativeLearned','DiscriminativeAE','DiscriminativeStochastic','Uncertainty','Bayesian','UncertaintyEntropy','BayesianEntropy','EGL','Adversarial')")
     p.add_argument('--initial_idx_path', '-idx', type=str,
                    default=None,
                    help="path to a folder with a pickle file with the initial indices of the labeled set")
@@ -161,8 +162,8 @@ def evaluate_sample(training_function, X_train, Y_train, X_test, Y_test, checkpo
 
     # shuffle the training set:
     perm = np.random.permutation(X_train.shape[0])
-    X_train = X_train[perm, :]
-    Y_train = Y_train[perm, :]
+    X_train = X_train[perm]
+    Y_train = Y_train[perm]
 
     # create the validation set:
     X_validation = X_train[:int(0.2*X_train.shape[0])]
@@ -172,7 +173,10 @@ def evaluate_sample(training_function, X_train, Y_train, X_test, Y_test, checkpo
 
     # train and evaluate the model:
     model = training_function(X_train, Y_train, X_validation, Y_validation, checkpoint_path, gpu=args.gpu)
-    loss, acc = model.evaluate(X_test, Y_test, verbose=0)
+    if args.data_type in ['imdb', 'wiki']:
+        acc = model.evaluate(X_test, Y_test, verbose=0)
+    else:
+        loss, acc = model.evaluate(X_test, Y_test, verbose=0)
 
     return acc, model
 
@@ -208,7 +212,6 @@ if __name__ == '__main__':
             input_shape = (3, 32, 32)
         evaluation_function = train_cifar100_model
 
-
     # make categorical:
     Y_train = to_categorical(Y_train)
     Y_test = to_categorical(Y_test)
@@ -229,8 +232,6 @@ if __name__ == '__main__':
         method = CoreSetSampling
     elif args.method == 'CoreSetMIP':
         method = CoreSetMIPSampling
-    elif args.method == 'MistakeSampling':
-        method = MistakeSampling
     elif args.method == 'Discriminative':
         method = DiscriminativeSampling
     elif args.method == 'DiscriminativeLearned':
@@ -261,8 +262,6 @@ if __name__ == '__main__':
             method2 = CoreSetSampling
         elif args.method2 == 'CoreSetMIP':
             method2 = CoreSetMIPSampling
-        elif args.method2 == 'MistakeSampling':
-            method2 = MistakeSampling
         elif args.method2 == 'Discriminative':
             method2 = DiscriminativeSampling
         elif args.method2 == 'DiscriminativeLearned':
@@ -337,7 +336,7 @@ if __name__ == '__main__':
     entropies = []
     label_distributions = []
     queries = []
-    acc, model = evaluate_sample(evaluation_function, X_train[labeled_idx,:], Y_train[labeled_idx,:], X_test, Y_test, checkpoint_path)
+    acc, model = evaluate_sample(evaluation_function, X_train[labeled_idx,:], Y_train[labeled_idx], X_test, Y_test, checkpoint_path)
     query_method.update_model(model)
     accuracies.append(acc)
     print("Test Accuracy Is " + str(acc))
@@ -358,7 +357,7 @@ if __name__ == '__main__':
         queries.append(new_idx)
 
         # evaluate the new sample:
-        acc, model = evaluate_sample(evaluation_function, X_train[labeled_idx,:], Y_train[labeled_idx,:], X_test, Y_test, checkpoint_path)
+        acc, model = evaluate_sample(evaluation_function, X_train[labeled_idx], Y_train[labeled_idx], X_test, Y_test, checkpoint_path)
         query_method.update_model(model)
         accuracies.append(acc)
         print("Test Accuracy Is " + str(acc))
