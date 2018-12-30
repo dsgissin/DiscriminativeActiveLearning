@@ -88,7 +88,7 @@ def load_cifar_10():
     load and pre-process the CIFAR-10 data
     """
 
-    dirname = '/cs/labs/shais/dsgissin/ActiveLearning/CIFAR-10/'  # TODO: your path here
+    dirname = ''  # TODO: your path here
 
     num_train_samples = 50000
 
@@ -127,7 +127,7 @@ def load_cifar_100(label_mode='fine'):
     load and pre-process the CIFAR-100 data
     """
 
-    dirname = '/cs/labs/shais/dsgissin/ActiveLearning/CIFAR-100/'  # TODO: your path here
+    dirname = ''  # TODO: your path here
 
     fpath = os.path.join(dirname, 'train')
     x_train, y_train = load_batch(fpath, label_key=label_mode + '_labels')
