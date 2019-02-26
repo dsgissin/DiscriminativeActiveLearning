@@ -174,9 +174,9 @@ We also saw that the methods can be sensitive to the actual objective we are opt
 
 Overall, while the different methods perform differently in different situations, **it doesn't seem like any of them really beat the good old uncertainty sampling**. This comes in contrast to what is shown in the different papers, and we do not have a good explanation for this.
 
-TODO: don't we have a good explanation for it...?
+TODO: don't we have a good explanation for it...? Talk about the bugs that we found?
 
-In the [next post][next post], we will review the work we did on developing a new active learning method - **"Discriminative Active Learning"** (DAL). The method gives results which are comparable to the other methods detailed here, but we weren't able to clearly beat any of them and so the work didn't result in a paper. Still, the method and thought process could be of interest. If you would rather skip ahead, [the post after that][last post] concludes this review of active learning.
+In the [next post][next post], we will review the work we did on developing a new active learning method - **"Discriminative Active Learning"** (DAL). The method gives results which are comparable to the other methods detailed here, but we weren't able to clearly beat any of them. Still, the method and thought process could be of interest. If you would rather skip ahead, [the post after that][last post] concludes this review of active learning. 
 
 [previous post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Batch-AL.html
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning

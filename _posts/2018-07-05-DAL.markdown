@@ -144,6 +144,8 @@ In this post we introduced **Discriminative Active Learning (DAL)**, a new activ
 
 We compared DAL to the methods we covered in the [previous post][third post] and saw that it performs similarly to the core set approach, while being easier to implement and more scalable. We also saw that our method shares the task-agnostic nature of the core set approach, making it very easy to adapt to machine learning tasks which aren't classification. While our method seems to do a great job, it isn't clearly better than any of the current baselines and so we can't recommend using it without further experiments.
 
+TODO: if they want to delve deeper, direct them to the DAL paper...
+
 In the [next post][conclusion] we will conclude this blog series by quickly going over what we learned and highlighting what we think are the most important take home messages.
 
 [first post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/AL-Intro.html

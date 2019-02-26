@@ -44,7 +44,7 @@ By now you can probably guess how this process can be improved, since random sam
 
 If you want to see many of the concepts we've covered applied to active mini batch selection, you can read [this paper][batch1], [this paper][batch2], [this paper][batch3] and [this paper][batch4] (among others).
 
-
+TODO: add the DAL paper reference
 
 [survey]: http://burrsettles.com/pub/settles.activelearning.pdf
 [logistic regression]: http://arxiv-export-lb.library.cornell.edu/pdf/1611.08618
