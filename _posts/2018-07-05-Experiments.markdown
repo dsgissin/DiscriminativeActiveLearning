@@ -105,19 +105,11 @@ CIFAR-10 is an image classification dataset with 10 classes. As opposed to the M
 
 We chose this batch size both because it was the setting in the core set paper, and because it gives us a view of a batch size that is orders of magnitude larger than the one usually used when comparing these methods. We also believe that this batch size is much more realistic for industry applications, where the datasets are usually very big and the labeling is paralleled.
 
-We should note that because the batch size is so big here, it is quite difficult to implement the MIP formulation of the core set approach, and that implementation takes a lot of time to run. In the core set paper the authors show that the MIP formulation gives a small but statistically significant improvement in performance on the CIFAR-10 dataset, but we weren't able to replicate their results. These are the results we got for the variants of the core set approach:
-
-{% include image.html path="Experiments/results_cifar10_core_set.png" %}
-
-We see that the two methods perform more or less the same, with no clear improvement for the MIP formulation. Assuming we implement the MIP formulation correctly (note that it gives an improvement over the greedy method on MNIST), a possible explanation for these results is that being susceptible to outliers is less of an issue when the batch size is so large (they only consist of a small fraction of the batch itself).
-
-That being said, we'll present the results for all of the algorithms (only looking at the greedy core set to make the plot less crowded):
-
 {% include image.html path="Experiments/results_cifar10_comparison.png" %}
 
 So, we see that in CIFAR-10 there is still a clear advantage for the different methods against random sampling. Also, we can see that the tested methods perform more or less the same and that their differences are negligable.
 
-We can take a couple of things away from these results. First, the success of these active learning methods isn't restricted to toy problems like MNIST - the results are clearly an improvement over random sampling even in CIFAR-10. Second, we see that when we raise the batch size to 5000, **the greedy methods continue to perform well** which isn't necessarily what we see in the core set paper or what we would intuitively expect. However, we do see that the batch aware methods perform much better in a larger, more realistic batch size.
+We can take a couple of things away from these results. First, the success of these active learning methods isn't restricted to toy problems like MNIST - the results are clearly an improvement over random sampling even in CIFAR-10. Second, we see that when we raise the batch size to 5000, **the greedy methods continue to perform well** which isn't necessarily what we see in the core set paper or what we would intuitively expect. However, we do see that the batch aware methods perform much better in a larger, more realistic setting.
 
 As for how all these results compare to the literature, we should point out one difference that keeps coming back - **uncertainty sampling gives us consistently good results while it gives weaker results in the papers**. The Bayesian active learning paper doesn't provide comparisons to the regular uncertainty sampling, while the adversarial approach paper seems to suggest that the uncertainty sampling method (along with the Bayesian adaptation) perform worse than random sampling for most of the active learning process, a result that is far from what we saw here. In the core set approach's paper when comparing on CIFAR-10 data we also see that uncertainty sampling and the Bayesian approach are more or less on par with random sampling, which is also not the case in our experiments. This is quite surprising since the uncertainty sampling method is very simple and easy to implement, but these differences could be due to differences in the experimental setup between the papers and us.
 
@@ -173,8 +165,6 @@ In this post we empirically compared the different methods that we detailed in t
 We also saw that the methods can be sensitive to the actual objective we are optimizing, along with the network architecture. This is especially true for methods like EGL, which use the model's gradient as part of their decision rule (and it might also be true of the adversarial approach for this same reason).
 
 Overall, while the different methods perform differently in different situations, **it doesn't seem like any of them really beat the good old uncertainty sampling**. This comes in contrast to what is shown in the different papers, and we do not have a good explanation for this.
-
-TODO: don't we have a good explanation for it...? Talk about the bugs that we found?
 
 In the [next post][next post], we will review the work we did on developing a new active learning method - **"Discriminative Active Learning"** (DAL). The method gives results which are comparable to the other methods detailed here, but we weren't able to clearly beat any of them. Still, the method and thought process could be of interest. If you would rather skip ahead, [the post after that][last post] concludes this review of active learning. 
 

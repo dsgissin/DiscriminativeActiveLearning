@@ -97,13 +97,19 @@ As for the sub-batch amount that was used in the following experiments where we 
 
 ### MNIST & CIFAR-10 Comparison
 
-Next, we move to comparing our method to all the other ones on MNIST and CIFAR-10:
+Next, we move to comparing our method to all the other ones on MNIST and CIFAR-10. These plots are the ones presented in our final [paper]:
 
-{% include image.html path="DAL/mnist_all.png" %}
+{% include image.html path="DAL/paper_mnist_10.png" %}
 
-{% include image.html path="DAL/cifar10_all.png" %}
+{% include image.html path="DAL/paper_mnist_100.png" %}
 
-{% include image.html path="DAL/cifar10_10000.png" %}
+{% include image.html path="DAL/paper_mnist_1000.png" %}
+
+{% include image.html path="DAL/paper_cifar10_1000.png" %}
+
+{% include image.html path="DAL/paper_cifar10_5000.png" %}
+
+{% include image.html path="DAL/paper_cifar10_10000.png" %}
 
 In the MNIST results we see more evidence that our method behaves in a similar way to the core set approach, since their results are more or less identical. This means that on the MNIST dataset there is a clear distinction between the results of the uncertainty-based methods (including the adversarial approach) and the covering based methods (core set and discriminative). On the CIFAR-10 front, we see that our method is on par with the rest of the methods, having negligible differences to the others...
 
@@ -156,3 +162,4 @@ In the [next post][conclusion] we will conclude this blog series by quickly goin
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning
 [mlp]: https://en.wikipedia.org/wiki/Multilayer_perceptron
 [conclusion]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Conclusion.html
+[paper]: https://www.google.com
