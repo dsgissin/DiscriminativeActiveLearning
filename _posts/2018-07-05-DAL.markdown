@@ -97,7 +97,7 @@ As for the sub-batch amount that was used in the following experiments where we 
 
 ### MNIST & CIFAR-10 Comparison
 
-Next, we move to comparing our method to all the other ones on MNIST and CIFAR-10. These plots are the ones presented in our final [paper]:
+Next, we move to comparing our method to all the other ones on MNIST and CIFAR-10. These plots are the ones presented in our final [paper][paper]:
 
 {% include image.html path="DAL/paper_mnist_10.png" %}
 
@@ -111,7 +111,7 @@ Next, we move to comparing our method to all the other ones on MNIST and CIFAR-1
 
 {% include image.html path="DAL/paper_cifar10_10000.png" %}
 
-In the MNIST results we see more evidence that our method behaves in a similar way to the core set approach, since their results are more or less identical. This means that on the MNIST dataset there is a clear distinction between the results of the uncertainty-based methods (including the adversarial approach) and the covering based methods (core set and discriminative). On the CIFAR-10 front, we see that our method is on par with the rest of the methods, having negligible differences to the others...
+In the MNIST results we see more evidence that our method behaves in a similar way to the core set approach, since their results are more or less identical once the batch size is large enough. This means that on the MNIST dataset there is a clear distinction between the results of the uncertainty-based methods (including the adversarial approach) and the covering based methods (core set and discriminative). On the CIFAR-10 front, we see that our method is on par with the rest of the methods, having negligible differences to the others...
 
 Finally, let's look at how our method looks in the label entropy metric against the other methods:
 
@@ -148,9 +148,11 @@ A possible explanation here would be that while the two dimensional toy example 
 ## Summary
 In this post we introduced **Discriminative Active Learning (DAL)**, a new active learning algorithm for the batch setting. We gave some intuition as to why the method should work, and presented the thought process and experiments we ran until we got our final algorithm.
 
-We compared DAL to the methods we covered in the [previous post][third post] and saw that it performs similarly to the core set approach, while being easier to implement and more scalable. We also saw that our method shares the task-agnostic nature of the core set approach, making it very easy to adapt to machine learning tasks which aren't classification. While our method seems to do a great job, it isn't clearly better than any of the current baselines and so we can't recommend using it without further experiments.
+We compared DAL to the methods we covered in the [previous post][third post] and saw that it performs similarly to the core set approach, while being easier to implement and more scalable. We also saw that our method shares the task-agnostic nature of the core set approach, making it very easy to adapt to machine learning tasks which aren't classification. 
 
-TODO: if they want to delve deeper, direct them to the DAL paper...
+While we would have hoped to see our method beat all other methods, this isn't really the case. Still, the results are on par with today's state of the art which is pleasing. In the end however, when dealing with a real active learning task, we can't recommend our method over good old uncertainty sampling, without running more experiemnts.
+
+If you found DAL interesting and would like to read more about it and other theoretical morivations for it from domain adaptation and GANs, you're welcome to read our [paper][paper].
 
 In the [next post][conclusion] we will conclude this blog series by quickly going over what we learned and highlighting what we think are the most important take home messages.
 
