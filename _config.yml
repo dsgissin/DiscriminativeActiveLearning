@@ -2,7 +2,7 @@ title: Discriminative Active Learning
 author: Daniel Gissin
 email: daniel.gissin (at) mail.huji.ac.il
 description: >- 
-  An introduction to the active learning framework, from classical algorithms to state of the art methods for deep active learning. The methods are also compared empirically with the source code of the experiments freely available, and a new method called "Discriminative Active Learning" is introduced and discussed.
+  An introduction to the active learning framework, from classical algorithms to state of the art methods for neural networks. A new method called "Discriminative Active Learning" is introduced and discussed.
 baseurl: "/DiscriminativeActiveLearning"
 url: "https://dsgissin.github.io/" 
 github_username: dsgissin
