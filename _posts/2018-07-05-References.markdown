@@ -20,6 +20,8 @@ comments: true
 
 - [Coordinate Matching][coordinate]
 
+- DAL - currently under review for ICML.
+
 ### Other Interesting Methods
 
 #### Ensemble Methods
@@ -43,8 +45,6 @@ Finally, there is a very interesting application of active learning in the rathe
 By now you can probably guess how this process can be improved, since random sampling is something we've spent the whole blog trying to beat. Instead of trying to get a diverse and representative labeled sample from our data distribution, we can use active learning here to get a mini batch that is most informative for training the network and will lead to faster convergence of the network (and maybe even to a better optimum).
 
 If you want to see many of the concepts we've covered applied to active mini batch selection, you can read [this paper][batch1], [this paper][batch2], [this paper][batch3] and [this paper][batch4] (among others).
-
-TODO: add the DAL paper reference
 
 [survey]: http://burrsettles.com/pub/settles.activelearning.pdf
 [logistic regression]: http://arxiv-export-lb.library.cornell.edu/pdf/1611.08618

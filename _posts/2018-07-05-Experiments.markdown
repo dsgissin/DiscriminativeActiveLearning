@@ -6,11 +6,11 @@ comments: true
 In the [previous post][previous post] we surveyed some of today's state of the art active learning methods, applied to deep learning models. In this post we will compare the methods in different situations and try to understand which is better. If you're interested in our implementation of these methods and in code that can recreate these experiments, you're welcome to check out the [github repository][git] which contains all of the code.
 
 ## Disclaimers
-Before we get into the experimental setup and the results, we should make a few disclaimers about the experiments and active learning experiments in general. When we run active learning experiments using neural networks, there are many random things that effect a single experiment. First, the initial random batch strongly effects the first batch query (and subsequent batches as well). Next, we have that the neural network which trains on the labeled set is a non-convex model, and so different random seeds will lead to different models (and embeddings). This in turn causes another problem - when we want to evaluate the test accuracy of a labeled set, different evaluations (which require training a neural net on the labeled set) will lead to different accuracies...
+Before we get into the experimental setup and the results, we should make a few disclaimers about the experiments and active learning experiments in general. When we run active learning experiments using neural networks, there are many random things that affect a single experiment. First, the initial random batch strongly affects the first batch query (and subsequent batches as well). Next, the neural network which trains on the labeled set is a non-convex model, and so different random seeds will lead to different models (and representations). This in turn causes another problem - when we want to evaluate the test accuracy of a labeled set gathered by an algorithm, different evaluations (which require training a neural net on the labeled set) will lead to different test accuracies...
 
-All of these random effects and others mean that we should be extra careful when running these kinds of experiments. Sadly, most papers on this subject do not specify their complete experimental setup, leaving many things open to interpretation. Usually we are lucky to get more than the model and basic hyper parameters that were used, and this meant we had to try and devise a setup which is as fair as possible to the different methods.
+All of these random effects and others mean that we should be extra careful when running these kinds of experiments. Sadly, most papers on this subject do not specify their complete experimental setup, leaving many things open to interpretation. Usually we are lucky to get anything other than the model and basic hyper parameters that were used, and this means we had to try and devise a setup which is as fair as possible to the different methods.
 
-Another important parameter for the experiments that changes between the papers is the **batch size**. As we saw in our [last post][previous post], having a large batch means that there is a bigger chance of the chosen examples being correlated and so the batch becomes less effective at raising our accuracy. Not surprisingly, papers that propose greedy active learning methods use a relatively small batch size while papers that propose batch-aware methods use a very large batch size. These choices help in showing the methods' stronger sides, but they make comparing the methods harder. We tried to compare the methods in both types of batch sizes in as fair a way as possible.
+Another important parameter for the experiments that changes between the papers is the **batch size**. As we saw in our [last post][previous post], having a large batch means that there is a bigger chance of the chosen examples being correlated and so the batch becomes less effective at raising our accuracy. Not surprisingly, papers that propose greedy active learning methods use a relatively small batch size while papers that propose batch-aware methods use a very large batch size. These choices help in showing the methods' stronger sides, but they make comparing the methods harder. We compared the methods in a wide range of batch sizes to be as fair as possible.
 
 As you will see, **our experimental results are different from some of the results reported in the papers**. When these differences occur, we will point them out and try to give an explanation, although in some of the cases we won't have a good one.
 
@@ -23,28 +23,28 @@ A single experiment for a method runs in the following way:
 
 - A neural network is trained on the labeled set and the resulting model is handed over to the method. The model architecture and hyper parameters are the same for all the models.
 
-- The models accuracy on a held-out test set is recorded. This test set is the same for all the experiments and methods.
+- The model accuracy on a held-out test set is recorded. This test set is the same for all the experiments and methods.
 
 - The method uses the model to choose a batch to be labeled and that batch is added to the labeled set.
 
 - Repeat from step 2 for a predetermined amount of iterations.
 
-We run ~10 experiments for every one of the methods and then average their accuracy in every iteration over all the experiments. The plots in this post present the average accuracy for every iteration, along with their empirical standard deviations.
+We run 20 experiments for every one of the methods and then average their accuracy in every iteration over all the experiments. The plots in this post present the average accuracy for every iteration, along with their empirical standard deviations.
 
 We'll now move to some final nitty details of an experiment.
 
 #### Initial Labeled Set
-The initial labeled set has a big effect on the entire experiment. To make things fair, we used the same initial labeled set for all the methods. For example, if we ran 10 experiments for all of the methods, there would be 10 initial labeled sets that would be the same for all the methods. This insures that we control for the effects of the randomness of the initial labeled set.
+The initial labeled set has a big effect on the entire experiment. To make things fair, we used the same initial labeled set for all the methods. For example, if we ran 20 experiments for all of the methods, there would be 20 initial labeled sets that would be the same for all the methods. This insures that we control for the effects of the randomness of the initial labeled set.
 
 #### Training a Neural Network on the Labeled Set
 As we said, the neural network training can have different results on the same labeled set. We tried experimenting with many forms of early stopping and running several evaluations and taking the best one, but these didn't seem to work very well (mostly due to the difficulty of stopping the training at the right time).
 
-The method we found that works best was to train a neural network only once, but to train it for much longer than necessary while saving the weights during training after every epoch where the validation accuracy has improved (or stayed the same). The validation set was always a random subset of 20% of the labeled set. This allowed us to not worry about early stopping issues and made sure that we got the best (or close to the best) weights of the model.
+The method we found that works best was to train a neural network only once, but to train it for much longer than necessary while saving the weights during training after every epoch where the validation accuracy has improved or stayed the same. The validation set was always a random subset of 20% of the labeled set. This allowed us to not worry about early stopping issues and made sure that we got the best (or close to the best) weights of the model.
 
 This does not completely control for the randomness of the neural network training, but we found it reduces it quite a bit and we are able to deal with the randomness by running several experiments and averaging over them...
 
 ## Comparison on MNIST
-We start with a comparison on the [MNIST dataset][MNIST]. The architecture we use here for all the methods is a simple convolutional architecture (the [LeNet][lenet] architecture). For a detailing of the hyper parameters you're welcome to look at [our code][git]. The batch size we used here was a **batch size of 100**, and an initial labeled set of size 100 as well.
+We start with a comparison on the [MNIST dataset][MNIST]. The architecture we use here for all the methods is a simple convolutional architecture (the [LeNet][lenet] architecture). For a detailing of the hyper parameters you're welcome to look at [our code][git]. The batch size we used here was a **batch size of 100**, and an initial labeled set of size 100 as well. For additional batch sizes you're welcome to look at our [next post][next post].
 
 The methods we compared are random sampling, regular uncertainty sampling (using the softmax scores), Bayesian uncertainty sampling, Adversarial active learning, EGL, core set with the greedy algorithm and core set with the MIP extension.
 
@@ -67,9 +67,7 @@ We have only one formulation of this method that we checked, which corresponds t
 We can see that the adversarial approach beats random sampling by a significant margin.
 
 ### Core Set Methods
-Next, we compare the greedy core set method with the MIP formulation. As detailed in the core set paper, adding the MIP formulation increases the running time of the core set algorithm considerably (and we saw this in our experiments as well). Also, during these experiments we were unable to run the MIP formulation on the full MNIST dataset (which has 50,000 examples), due to memory issues. This can be resolved by using frameworks that handle large optimization problems such as this, but this was outside the scope of this project. We chose to **subsample 3000 unlabeled examples** and run the MIP formulation on that subset (along with the labeled set). This is different than what was reported in the core set paper, and so our results might be different due to this difference. We also changed the number of outliers allowed in the formulation to be a constant of **250 outliers**, which is also different from what was reported in the paper.
-
-After those disclaimers we can move on to comparing the two formulations:
+Next, we compare the greedy core set method with the MIP formulation. As detailed in the core set paper, adding the MIP formulation increases the running time of the core set algorithm considerably (and we saw this in our experiments as well). However, it does improve the performance:
 
 {% include image.html path="Experiments/results_mnist_CoreSet.png" %}
 
@@ -94,7 +92,7 @@ So how are the methods ranked against each other on the MNIST dataset?
 
 {% include image.html path="Experiments/results_mnist_all.png" %}
 
-Interestingly, we see that the adversarial approach is on par with the uncertainty-based approach. A possible explanation for this (which we'll see more evidence for later) is that **the adversarial approach is in general very similar to the uncertainty-based methods**. We saw that in the linear case the margin-based methods are the same as the uncertainty ones, and the adversarial approach is a margin based approach...
+Interestingly, we see that the adversarial approach is on par with the uncertainty-based approach after a few iterations. A possible explanation for this (which we'll see more evidence for later) is that **the adversarial approach behaves similarly to the uncertainty-based methods**. We saw that in the linear case the margin-based methods are the same as the uncertainty ones, and the adversarial approach is a margin based approach, so maybe this extends to neural networks...
 
 While the adversarial and uncertainty methods look similar, we see that the core set approach is different from them (and a bit worse on MNIST). This can possibly be attributed to the small batch size, since the core set approach is designed for large batch sizes to take advantage of having a batch that is as diverse as possible.
 
@@ -109,7 +107,7 @@ We chose this batch size both because it was the setting in the core set paper, 
 
 So, we see that in CIFAR-10 there is still a clear advantage for the different methods against random sampling. Also, we can see that the tested methods perform more or less the same and that their differences are negligable.
 
-We can take a couple of things away from these results. First, the success of these active learning methods isn't restricted to toy problems like MNIST - the results are clearly an improvement over random sampling even in CIFAR-10. Second, we see that when we raise the batch size to 5000, **the greedy methods continue to perform well** which isn't necessarily what we see in the core set paper or what we would intuitively expect. However, we do see that the batch aware methods perform much better in a larger, more realistic setting.
+We can take a couple of things away from these results. First, the success of these active learning methods isn't restricted to toy problems like MNIST - the methods are clearly an improvement over random sampling even in CIFAR-10. Second, we see that when we raise the batch size to 5000, **the greedy methods continue to perform well** which isn't necessarily what we see in the core set paper or what we would intuitively expect. However, we do see that the batch aware methods perform much better in a larger, more realistic setting.
 
 As for how all these results compare to the literature, we should point out one difference that keeps coming back - **uncertainty sampling gives us consistently good results while it gives weaker results in the papers**. The Bayesian active learning paper doesn't provide comparisons to the regular uncertainty sampling, while the adversarial approach paper seems to suggest that the uncertainty sampling method (along with the Bayesian adaptation) perform worse than random sampling for most of the active learning process, a result that is far from what we saw here. In the core set approach's paper when comparing on CIFAR-10 data we also see that uncertainty sampling and the Bayesian approach are more or less on par with random sampling, which is also not the case in our experiments. This is quite surprising since the uncertainty sampling method is very simple and easy to implement, but these differences could be due to differences in the experimental setup between the papers and us.
 
@@ -134,7 +132,7 @@ Another interesting thing to note here is the label entropy of EGL which is much
 
 But the EGL paper showed great results, so what happened?
 
-Remember that the team at Baidu implemented EGL as an active learning method for speech recognition using RNNs, and our experiments were all on image classification tasks using CNNs. The two architectures are very different and so it is quite plausible that the architectures have gradients that behave differently. There is also a difference in the loss function used, where Baidu's team tries to maximize the log likelihood of the data while we try to minimize the cross-entropy classification loss. With all these differences, it isn't surprising that the gradients will behave differently between the experiments, and because EGL is based on the gradient length, it isn't surprising that we will see this difference in performance.
+Remember that the team at Baidu implemented EGL as an active learning method for speech recognition using RNNs, and our experiments were all on image classification tasks using CNNs. The two architectures are very different and so it is quite plausible that the architectures have gradients that behave differently. It is also possible that there was a difference in the regularization used on the model, which affects the gradients. With all these differences, it isn't surprising that the gradients will behave differently between the experiments, and because EGL is based on the expected gradient norm, it isn't surprising that we will see this difference in performance.
 
 Checking that our suspicions are correct regarding the difference in gradient behavior is interesting, but is outside the scope of this project...
 
@@ -164,9 +162,9 @@ In this post we empirically compared the different methods that we detailed in t
 
 We also saw that the methods can be sensitive to the actual objective we are optimizing, along with the network architecture. This is especially true for methods like EGL, which use the model's gradient as part of their decision rule (and it might also be true of the adversarial approach for this same reason).
 
-Overall, while the different methods perform differently in different situations, **it doesn't seem like any of them really beat the good old uncertainty sampling**. This comes in contrast to what is shown in the different papers, and we do not have a good explanation for this.
+Overall, while the different methods perform differently in different situations, **it doesn't seem like any of them really beat the good old uncertainty sampling**. This comes in contrast to what is shown in the different papers, but we stand by our results as we feel we have taken great care to run fair comparisons and experiments.
 
-In the [next post][next post], we will review the work we did on developing a new active learning method - **"Discriminative Active Learning"** (DAL). The method gives results which are comparable to the other methods detailed here, but we weren't able to clearly beat any of them. Still, the method and thought process could be of interest. If you would rather skip ahead, [the post after that][last post] concludes this review of active learning. 
+In the [next post][next post], we will review the work we did on developing a new active learning method - **"Discriminative Active Learning"** (DAL). The method gives results which are comparable to the other methods detailed here, but we weren't able to clearly beat any of them. Still, we feel the method and thought process is of interest. If you would rather skip ahead, [the post after that][last post] concludes this review of active learning. 
 
 [previous post]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Batch-AL.html
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning

@@ -17,5 +17,5 @@ theme: minima
 plugins:
   - jekyll-feed
   - jekyll-redirect-from
-  #- jekyll-seo-tag
-  #- jekyll-sitemap
+  - jekyll-seo-tag
+  - jekyll-sitemap

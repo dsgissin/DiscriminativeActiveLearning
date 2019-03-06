@@ -48,7 +48,7 @@ Maximum entropy uses the label distribution's entropy as a measure for the uncer
 
 $$ \underset{x}{\mathrm{argmin}}\,-\sum_{y \in Y}\hat{P}(y|x)log(\hat{P}(y|x)) $$
 
-When we are talking about linear classifiers like in the blob example above, choosing according to the uncertainty sampling heuristic is the same as **choosing the sample closest to the decision boundary**. In the blob example we used uncertainty sampling as our query strategy, and we can clearly see that the chosen examples really are those that are closest to the boundary. This margin-based approach converges with the uncertainty approach only for linear classifiers though, and we'll address this difference in the next post when we look at active learning for neural networks...
+When we are talking about linear classifiers like in the blob example above, choosing according to the uncertainty sampling heuristic is the same as **choosing the sample closest to the decision boundary**. In the blob example we used uncertainty sampling as our query strategy, and we can clearly see that the chosen examples really are those that are closest to the boundary. This margin-based approach is equivalent to the uncertainty approach only for linear classifiers though, and we'll address this difference in the next post when we look at active learning for neural networks...
 
 So, all this sounds reasonable, but is it any good?
 
@@ -63,7 +63,7 @@ The second heuristic that was very prominent in the early days of active learnin
 
 QBC also has another interpretation though. The model which we are trying to learn comes from a certain hypothesis class (for example, the class of all linear classifiers). When we have a small number of labeled examples, there could be many possible models that fit the data, but some of them might not generalize well. If we look at our ensemble as a set of models from different viable parts of the hypothesis class (also called the "version space"), then choosing the example with the biggest disagreement corresponds to **making the current version space as small as possible**. This can help us zero in on the right hypothesis using a small number of labeled examples, like we want.
 
-In the same way we can define different measures for "uncertainty", we can also define different measures of "disagreement". An example of such a measure which corresponds to uncertainty sampling's maximum entropy measure is the "vote entropy". Here, we count the votes for every possible label and normalize so that it's a distribution and look at the entropy. If \\(M\\) is the size of our ensemble, the decision rule we end up with is:
+In the same way that we can define different measures for "uncertainty", we can also define different measures of "disagreement". An example of such a measure which corresponds to uncertainty sampling's maximum entropy measure is the "vote entropy". Here, we count the votes for every possible label and normalize so that it's a distribution and look at the entropy. If \\(M\\) is the size of our ensemble, the decision rule we end up with is:
 
 $$ \underset{x}{\mathrm{argmin}}\,-\sum_{y \in Y}\frac{Votes(y)}{M}log(\frac{Votes(y)}{M}) $$
 
@@ -74,13 +74,13 @@ To check if QBC is any good on the binary MNIST example, we can use 10 SVMs with
 Great results again!
 
 ### Other Strategies
-The two methods above are by far the most popular methods for the classical AL setting, but there are many other methods which were developed over the years. Here are some of these methods:
+The two methods above are by far the most popular methods for the classical AL setting, but there are many other methods which were developed over the years. Here are two examples:
 
 - **Expected Model Change** is an approach which tries to query the examples which we expect to cause the greatest change to our model. For models that we can calculate the gradients to (neural networks for example), a possible approach can be to choose the example with the largest expected gradient length (EGL), where the expectation is over the probabilities that the model gives to the labels. The decision rule for EGL is:
 
 $$ \underset{x}{\mathrm{argmax}}\,\sum_{y \in Y}\hat{P}(y|x)||\frac{\partial l(x,y)}{\partial \theta}|| $$
 
-- **Density Weighted Methods** try to query examples which have both a high uncertainty and which are "representative", meaning they are in dense regions of the data manifolds. This method avoids choosing examples which are outliers, even if they have a high uncertainty, under the assumption that outliers give us less information on the data distribution.
+- **Density Weighted Methods** tries to query examples which have both a high uncertainty and which are "representative", meaning they are in dense regions of the data manifolds. This method avoids choosing examples which are outliers, even if they have a high uncertainty, under the assumption that outliers give us less information on the data distribution.
 
 ## Summary
 

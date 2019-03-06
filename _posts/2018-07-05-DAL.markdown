@@ -52,7 +52,7 @@ We color discriminative plots differently - red dots are in the labeled set and 
 
 This sort of data is very different from real data. We can't really picture high dimensional data manifolds and our lower dimensional intuitions often fail in high dimensions. still, we can learn a thing or two from looking at toy problems. We can see that in the two cases our method is very different from uncertainty sampling: 
 
-In the first case, uncertainty sampling focuses heavily on examples which are close to the decision boundary between the two blobs, while our method does the opposite and focuses on examples in the extremes. In hindsight this isn't very surprising, since our method chooses examples which are most confidently classified as "unlabeled", so when we're working with linear classifiers like in this example **our method chooses the examples which are farthest from the decision boundary**. That being said, we should remember that these decision boundaries are different (they are for different classification problems).
+In the first case, uncertainty sampling focuses heavily on examples which are close to the decision boundary between the two blobs, while our method does the opposite and focuses on examples in the extremes. In hindsight this isn't very surprising - since our method chooses examples which are most confidently classified as "unlabeled", when we're working with linear classifiers like in this example **our method chooses the examples which are farthest from the decision boundary**. That being said, we should remember that the decision boundary of our method is different from the one used by uncertainty sampling - they are for different classification problems.
 
 In the second case, which was specifically hand crafted to fool uncertainty sampling, uncertainty sampling focuses only on examples from the two close clusters while completely ignoring the other clusters which are informative and would lead to a better classification accuracy. Our method on the other hand does the exact opposite and quickly queries an example from each of the clusters. This hints at another behavior our method has which is like the core set approach - **the discriminative method starts by covering the different modes of the distribution**. While this looks great and seems like a problem for uncertainty sampling, we should say that this kind of data rarely exists in high dimensions, and we don't get real data that uncertainty sampling fails on this badly.
 
@@ -67,7 +67,9 @@ The first idea was to use a stochastic decision rule. Instead of making a hard c
 
 Another idea was to formulate the batch decision rule in the same way that the core set approach does, but only over the examples we were confident about (either over a threshold or over a certain number of examples). We'll use the representation learned by our binary classifier to make that choice. This would ensure we don't pick too many outliers and help make sure we choose examples which are different from the labeled set in different ways.
 
-We tried playing around with these ideas a bit, but sadly couldn't get an improvement over the regular algorithm. Later in this post we'll show one of the experiments we ran to try and make a variant of the algorithm.
+We tried playing around with these ideas a bit, but sadly couldn't get an improvement over the regular algorithm. Later in this post we'll show one of the experiments we ran to try and make a variant of the algorithm. 
+
+We should say however, that since neural networks are the model we are actually trying to work on, the outlier problem for our method isn't as bad as seen in the linear models. Neural networks are trained with batch SGD and converge to solutions which favor examples that are seen often, and so the neural network should emphasize classification of dense regions of the data manifold. This aids both in the mode seeking behavior we want, and in the fact that the dense regions will be given more training time than outliers, making the method more likely to choose examples from them.
 
 ## Experiments with Neural Nets in the Batch Setting
 Armed with what we learned from the toy problems, we can move on to the more realistic challenges of testing our method in the batch setting, on bigger datasets and with neural networks. In this setting we have a few new parameters to deal with - we need to choose the representation to work with (the raw data or the learned representation) and we need to choose how many sub-batches to query.
@@ -78,11 +80,7 @@ We'll arbitrarily choose a sub-batch amount of 10 and compare the possible repre
 
 {% include image.html path="DAL/discriminative_mnist_comparison.png" %}
 
-{% include image.html path="DAL/ranking_comparison.png" %}
-
-We can see from the first plot that it is clearly better to use the learned representation, which contains semantic information, as opposed to the raw pixel representation or the autoencoder one (even if that representation was good enough for the initial experiments).
-
-The ranking correlation plot between the two representations is also rather interesting. The two methods aren't entirely uncorrelated, but they are also not correlated in a regular way as we've seen for the uncertainty sampling alternatives. We're not too sure how to explain the straight lines in the top-right quadrant of the plot, but the important region for active learning is the bottom and left regions, which contain the examples that the methods rank as most informative. We can see that there are many examples that one representation ranks as very informative while the other one does not at all (as seen in the bottom-right and top-left quadrants). This explains why we see such a difference in performance between the two representations.
+We can see from the first plot that it is clearly better to use the learned representation, which contains semantic information, as opposed to the raw pixel representation or the autoencoder one (even if that representation was good enough for the experiments with the linear model).
 
 ### Sub-Batch Amount
 Next, we turn to compare our method using different amounts of sub-batches (the amount of times we run the binary classification process until we query the entire batch). If we want to query 100 examples we can do anything between choosing the top 100 instances that are classified as "unlabeled" using a single classifier, up to iteratively running 100 classifiers and taking the top single instance at every time.
@@ -97,7 +95,7 @@ As for the sub-batch amount that was used in the following experiments where we 
 
 ### MNIST & CIFAR-10 Comparison
 
-Next, we move to comparing our method to all the other ones on MNIST and CIFAR-10. These plots are the ones presented in our final [paper][paper]:
+Next, we move to comparing our method to all the other ones on MNIST and CIFAR-10. These plots are the ones presented in our paper. First, we will look at the results for the MNIST dataset, with a batch size of 10, 100 and 1000:
 
 {% include image.html path="DAL/paper_mnist_10.png" %}
 
@@ -105,13 +103,17 @@ Next, we move to comparing our method to all the other ones on MNIST and CIFAR-1
 
 {% include image.html path="DAL/paper_mnist_1000.png" %}
 
+In the MNIST results we see our method being less effective than the uncertainty-based methods and the adversarial approach when the batch size is small. However, we do see that DAL is overall better than the core set approach, especially when there is a small batch size and the core set approach is reduced to being only as good as random sampling.
+
+Next, we will look at the results on the harder CIFAR-10, with batch sizes of 1000, 5000 and 10,000:
+
 {% include image.html path="DAL/paper_cifar10_1000.png" %}
 
 {% include image.html path="DAL/paper_cifar10_5000.png" %}
 
 {% include image.html path="DAL/paper_cifar10_10000.png" %}
 
-In the MNIST results we see more evidence that our method behaves in a similar way to the core set approach, since their results are more or less identical once the batch size is large enough. This means that on the MNIST dataset there is a clear distinction between the results of the uncertainty-based methods (including the adversarial approach) and the covering based methods (core set and discriminative). On the CIFAR-10 front, we see that our method is on par with the rest of the methods, having negligible differences to the others...
+On the CIFAR-10 front, we see that our method is on par with the rest of the methods, having negligible differences to the others. While we obviously hoped to get a clear win for our method over the others, it is pleasing to see that for difficult tasks they all seem to perform similarly. Our method, while being very different from all others, performs on par with the rest.
 
 Finally, let's look at how our method looks in the label entropy metric against the other methods:
 
@@ -119,7 +121,7 @@ Finally, let's look at how our method looks in the label entropy metric against 
 
 {% include image.html path="DAL/cifar10_entropy.png" %}
 
-Seems relatively consistent with what we would expect... Our method has results which are a bit too high for its actual accuracy scores, but that's not a problem since this measure is only a heuristic.
+Seems relatively consistent with what we would expect... Our method has results which are higher than others while not beating their accuracy scores, but that's not a problem since this measure is only a heuristic. We see our method leads to diversely labeled batches.
 
 ### Implementation Details
 The binary classification task we are trying to solve is very unbalanced since most of the time we'll have an order of magnitude more unlabeled examples than labeled examples. This means we need to be careful in the way we train our neural network to make sure we don't get a classifier that just thinks everything is "unlabeled".
@@ -128,7 +130,7 @@ We found that there were two things that were crucial in this case. First, we ne
 
 As for the architecture used for the binary classification, we chose to use a [MLP][mlp] architecture (a deep fully connected neural network) for simplicity and speed, and you may take a look at [the code][git] for the exact details which weren't too important. We should note however that since we are basically trying to classify random labels, we're asking the network to overfit a difficult classification task and so **we shouldn't use any form of regularization** (no weight decay, dropout and so on).
 
-Finally, to insure that our network isn't overfitting the binary classification task too well (which would cause the sampling process to resemble random sampling), if the accuracy of the classifier goes over 98% we stop the training early.
+Finally, to insure that our network isn't overfitting the binary classification task too well (which would cause the sampling process to resemble random sampling), if the accuracy of the classifier goes over 98% we stop the training early (assuming we subsampled the unlabeled set to have 10 times the number of examples as the labeled set).
 
 ### Attempt at a Stochastic Variant
 As we said earlier in the post, we had a few ideas to try and make our algorithm more robust to outliers. Experiments we ran didn't pan out, and one of them was the following:
@@ -150,9 +152,9 @@ In this post we introduced **Discriminative Active Learning (DAL)**, a new activ
 
 We compared DAL to the methods we covered in the [previous post][third post] and saw that it performs similarly to the core set approach, while being easier to implement and more scalable. We also saw that our method shares the task-agnostic nature of the core set approach, making it very easy to adapt to machine learning tasks which aren't classification. 
 
-While we would have hoped to see our method beat all other methods, this isn't really the case. Still, the results are on par with today's state of the art which is pleasing. In the end however, when dealing with a real active learning task, we can't recommend our method over good old uncertainty sampling, without running more experiemnts.
+While we would have hoped to see our method beat all other methods, this isn't really the case. Still, the results are on par with today's state of the art which is pleasing. In the end however, when dealing with a real active learning task, we can't recommend our method over good old uncertainty sampling, without running more experiments.
 
-If you found DAL interesting and would like to read more about it and other theoretical morivations for it from domain adaptation and GANs, you're welcome to read our [paper][paper].
+If you found DAL interesting and would like to read more about it and other theoretical motivations for it from domain adaptation and GANs, you're welcome to read our paper.
 
 In the [next post][conclusion] we will conclude this blog series by quickly going over what we learned and highlighting what we think are the most important take home messages.
 

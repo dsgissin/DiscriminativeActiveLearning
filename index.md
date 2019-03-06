@@ -8,11 +8,11 @@ When we study supervised machine learning, the basic assumption usually is that 
 
 In practice though, this isn't always the case. Not every learning task that we face has its own MNIST that we can easily download and play around with - most of the tasks that are interesting require data collection, cleaning and labeling. Even if you're one of the industry giants and have access to a huge amount of data, you'll still need to label that data. And labeling usually isn't as simple as choosing the class of the image either... You might need someone to place a bounding box around each interesting region of an image, or pay a linguist to pick the correct part-of-speech tag for every word in a corpus, or pay a radiologist a lot of money to go over many MRI scans and mark tumors.
 
-So, while we would like to spend most of our time tweaking our hyper parameters to get the best results on our data, we end up spending most of it (along with a lot of our money) on labeling the data. This issue has been one of the key drives for research into unsupervised learning, semi-supervised learning and our topic today - Active Learning (AL).
+So, while we would like to spend most of our time tweaking our hyper parameters to get the best results on our data, we end up spending most of it (along with a lot of our money) on labeling the data. This issue has been one of the key drivers for research into unsupervised learning, semi-supervised learning and our topic today - Active Learning (AL).
 
 ### Blog Structure
 
-In this blog we'll dive into active learning, starting with the basic framework and approaches and moving along to a more modern and practical setting. We will also evaluate and compare these methods in a controlled environment to see what really works (at least on the classic MNIST and CIFAR datasets). Finally, we will suggest a new method for active learning and detail the thought process that led us during the research in trying to get this new method to work well. 
+In this blog we'll dive into active learning, starting with the basic framework and approaches and moving along to a more modern and practical setting. We will evaluate and compare active learning methods in a controlled environment to see what really works (at least on the classic MNIST and CIFAR datasets). Finally, we will suggest a new method for active learning and detail the thought process that led us during the research in trying to get this new method to work well. 
 
 All of the code for recreating the experiments in this blog, along with our implementations of the different methods are available in our [github repository][git] and you are free to use it and learn from it.
 
