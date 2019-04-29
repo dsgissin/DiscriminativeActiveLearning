@@ -20,7 +20,7 @@ comments: true
 
 - [Coordinate Matching][coordinate]
 
-- DAL - currently under review for ICML.
+- [DAL][DAL] - Our paper, submitted to ICLR 2019.
 
 ### Other Interesting Methods
 
@@ -55,6 +55,7 @@ If you want to see many of the concepts we've covered applied to active mini bat
 [Silvio Core Set]: https://arxiv.org/pdf/1708.00489.pdf
 [egl]: https://arxiv.org/pdf/1612.03226.pdf
 [coordinate]: https://icml.cc/2012/papers/607.pdf
+[DAL]: https://openreview.net/forum?id=rJl-HsR9KX
 
 [multi armed]: https://en.wikipedia.org/wiki/Multi-armed_bandit
 [bandit1]: https://www.csie.ntu.edu.tw/~htlin/paper/doc/aaai15albl.pdf

@@ -95,7 +95,7 @@ As for the sub-batch amount that was used in the following experiments where we 
 
 ### MNIST & CIFAR-10 Comparison
 
-Next, we move to comparing our method to all the other ones on MNIST and CIFAR-10. These plots are the ones presented in our paper. First, we will look at the results for the MNIST dataset, with a batch size of 10, 100 and 1000:
+Next, we move to comparing our method to all the other ones on MNIST and CIFAR-10. These plots are the ones presented in [our paper][paper]. First, we will look at the results for the MNIST dataset, with a batch size of 10, 100 and 1000:
 
 {% include image.html path="DAL/paper_mnist_10.png" %}
 
@@ -154,7 +154,7 @@ We compared DAL to the methods we covered in the [previous post][third post] and
 
 While we would have hoped to see our method beat all other methods, this isn't really the case. Still, the results are on par with today's state of the art which is pleasing. In the end however, when dealing with a real active learning task, we can't recommend our method over good old uncertainty sampling, without running more experiments.
 
-If you found DAL interesting and would like to read more about it and other theoretical motivations for it from domain adaptation and GANs, you're welcome to read our paper.
+If you found DAL interesting and would like to read more about it and other theoretical motivations for it from domain adaptation and GANs, you're welcome to read our [paper][paper].
 
 In the [next post][conclusion] we will conclude this blog series by quickly going over what we learned and highlighting what we think are the most important take home messages.
 
@@ -166,4 +166,4 @@ In the [next post][conclusion] we will conclude this blog series by quickly goin
 [git]: https://github.com/dsgissin/DiscriminativeActiveLearning
 [mlp]: https://en.wikipedia.org/wiki/Multilayer_perceptron
 [conclusion]: https://dsgissin.github.io/DiscriminativeActiveLearning/2018/07/05/Conclusion.html
-[paper]: https://www.google.com
+[paper]: https://openreview.net/forum?id=rJl-HsR9KX
