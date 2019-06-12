@@ -46,7 +46,7 @@ $$ \underset{x}{\mathrm{argmin}}\,\underset{y}{\mathrm{max}}(\hat{P}(y|x))) $$
 
 Maximum entropy uses the label distribution's entropy as a measure for the uncertainty of the model on an example. This considers the probabilities of all possible labels. The resulting decision rule then becomes: 
 
-$$ \underset{x}{\mathrm{argmin}}\,-\sum_{y \in Y}\hat{P}(y|x)log(\hat{P}(y|x)) $$
+$$ \underset{x}{\mathrm{argmax}}\,-\sum_{y \in Y}\hat{P}(y|x)log(\hat{P}(y|x)) $$
 
 When we are talking about linear classifiers like in the blob example above, choosing according to the uncertainty sampling heuristic is the same as **choosing the sample closest to the decision boundary**. In the blob example we used uncertainty sampling as our query strategy, and we can clearly see that the chosen examples really are those that are closest to the boundary. This margin-based approach is equivalent to the uncertainty approach only for linear classifiers though, and we'll address this difference in the next post when we look at active learning for neural networks...
 
