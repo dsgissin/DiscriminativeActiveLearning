@@ -65,7 +65,7 @@ QBC also has another interpretation though. The model which we are trying to lea
 
 In the same way that we can define different measures for "uncertainty", we can also define different measures of "disagreement". An example of such a measure which corresponds to uncertainty sampling's maximum entropy measure is the "vote entropy". Here, we count the votes for every possible label and normalize so that it's a distribution and look at the entropy. If \\(M\\) is the size of our ensemble, the decision rule we end up with is:
 
-$$ \underset{x}{\mathrm{argmin}}\,-\sum_{y \in Y}\frac{Votes(y)}{M}log(\frac{Votes(y)}{M}) $$
+$$ \underset{x}{\mathrm{argmax}}\,-\sum_{y \in Y}\frac{Votes(y)}{M}log(\frac{Votes(y)}{M}) $$
 
 To check if QBC is any good on the binary MNIST example, we can use 10 SVMs with different regularization coefficients to get different viable models for the labeled set, and then use their disagreement to choose the next example to label. Running the experiment gives us the following results:
 
