@@ -4,7 +4,7 @@ email: daniel.gissin (at) mail.huji.ac.il
 description: >- 
   An introduction to the active learning framework, from classical algorithms to state of the art methods for neural networks. A new method called "Discriminative Active Learning" is introduced and discussed.
 baseurl: "/DiscriminativeActiveLearning"
-url: "https://dsgissin.github.io/" 
+url: "https://dsgissin.github.io" 
 github_username: dsgissin
 
 google_analytics: UA-122375369-1
