@@ -1,6 +1,6 @@
 # Discriminative Active Learning
 
-This repository contains the code used to run the deep active learning experiments detailed in our paper, currently under review for ICML 2019.
+This repository contains the code used to run the deep active learning experiments detailed in our paper - https://arxiv.org/abs/1907.06347
 
 You may use the code in this repository, but note that this isn't a complete active learning library and is not fully generic. Replicating the experiments and using the implementations should be easy, but adapting the code to new datasets and experiment types may take a bit of effort.
 
